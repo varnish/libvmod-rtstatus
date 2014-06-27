@@ -1,0 +1,3 @@
+Module rtstatus
+Init init_function
+Function STRING rtstatus()

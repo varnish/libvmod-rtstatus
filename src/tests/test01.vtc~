@@ -1,0 +1,29 @@
+varnishtest "Test rtstatus vmod"
+
+server s1 {
+       rxreq
+       txresp
+} -start
+
+varnish v1 -vcl+backend {
+	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
+
+	sub vcl_recv {
+		error 200 "OK";
+	}
+
+	sub vcl_error {
+		synthetic rtstatus.rtstatus();
+		return (deliver);
+	}
+} -start
+
+client c1 {
+       txreq -url "/"
+       rxresp
+       expect resp.bodylen == 101
+}
+
+client c1 -run
+
+
