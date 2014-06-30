@@ -10,8 +10,12 @@
 #include "bin/varnishd/cache_backend.h"
 #include "varnishapi.h"
 #include "vsm.h"
-#include "vcl.h"
 
+
+struct once_priv{
+  double up;
+  int pad;
+};
 
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
@@ -62,7 +66,7 @@ show_counter_cb(void *priv, const struct VSC_point *const pt)
     i += strcat(buf, pt->class);
   if (strcmp(pt->ident, ""))
     i += strcat(buf, pt->ident);
-    i += fprintf(f, "%s", pt->name);
+  /*    i += fprintf(f, "%s", pt->name);
   if (i < 35)
     fprintf(f, "%*s", i - 35, "");
   fprintf(f, " %s:\t %d\n", pt->desc,val);
@@ -89,43 +93,73 @@ write_vsc(struct sess *sp, char *p)
 
   return p;
 
-}*/
+}
+
+*/
+  //////////////////////////////////////////////////////////////
+
+char*
+grace(struct sess *sp, char *p)
+{
+  char *buf=malloc(2000);
+  strcat(p, "GRACE:\n");
+ strcat(p, "Grace TTL: ");
+  sprintf(buf, "%f\n",sp->exp.ttl);
+  strcat(p,buf); 
+strcat(p, "Grace grace: ");
+  sprintf(buf, "%f\n",sp->exp.grace);
+  strcat(p,buf);
+ strcat(p, "Grace age: ");
+  sprintf(buf, "%f\n",sp->exp.age);
+  strcat(p,buf);
+ strcat(p, "Grace entered: ");
+  sprintf(buf, "%f\n",sp->exp.entered);
+  strcat(p,buf);
+  free(buf);
+  return p;
+}
 
 
 
 ////////////////////////////////////////////////////////////////////
 
 char*
-write_sess(struct sess *sp,char *p)
+sess(struct sess *sp,char *p)
 {
   char *buf=malloc(2000);
-  char tmp[2048];
   time_t t = time(NULL);
   struct tm tm = *localtime(&t);
   
-  strcat( buf, "Varnish-Cache status:\n\n");
-  strcat(buf, "min: ");
-  sprintf(tmp, "%d\n",tm.tm_min);
-  strcat(buf,tmp);
-
-  strcat(buf, "Session pointer id: ");
-  sprintf(tmp, "%d\n", sp->id);
-  strcat(buf,tmp);
- 
-  strcat(buf, "Client id: ");
-  sprintf(tmp, "%d\n", sp->client_identity);
-  strcat(buf,tmp);
-
-  strcat(buf,"Client address: ");
-  strcat(buf,sp->addr);
-  strcat(buf,"\n");
-  strcat(buf,"Client number port: ");
-  strncat(buf,sp->port,sizeof buf);
-  strcat(buf,"\n");
-  strcpy(p,buf);
-
+  strcat( p, "Varnish-Cache status:\n\n");
+  strcat(p, "min: ");
+  sprintf(buf, "%d\n",tm.tm_min);
+  strcat(p,buf);
   
-  // strcpy(p,write_vsc(sp,p));
+  /*real interesting counters*/
+ strcat(p, "Error code: ");
+  sprintf(buf, "%d ",sp->err_code);
+  strcat(p,buf);
+  strcat(p,sp->err_reason);
+  strcat(p,"\n");
+  strcat(p,"Client address: ");
+  strcat(p,sp->addr);
+  strcat(p,"\n");
+  strcat(p, "Number restarts: ");
+  sprintf(buf, "%d\n",sp->restarts);
+  strcat(p,buf);
+  strcat(p, "Esi level: ");
+  sprintf(buf, "%d\n",sp->esi_level);
+  strcat(p,buf);
+  strcat(p, "Disable Esi: ");
+  sprintf(buf, "%d\n",sp->disable_esi);
+  strcat(p,buf);
+
+  if(sp->wrk->is_gzip != 0){
+strcat(p, "Gzip: ");
+  sprintf(buf, "%d\n",sp->wrk->is_gzip);
+  strcat(p,buf);
+  }
+  free(buf);
   return p;
 }
 
@@ -138,10 +172,15 @@ vmod_rtstatus(struct sess *sp)
   unsigned max_sz;
   char buf[2048];
   
-  max_sz = WS_Reserve(sp->wrk->ws, 2000);
+  max_sz = WS_Reserve(sp->wrk->ws, 0);
   p = sp->wrk->ws->f;
   *p = 0;
-  strcpy(p, write_sess(sp,p));
+  
+  sess(sp,p);
+  if(sp->exp.grace){
+    grace(sp,p);
+  }
+
   STRCAT(p, buf, max_sz);
   
   WS_Release(sp->wrk->ws, strlen(p));
