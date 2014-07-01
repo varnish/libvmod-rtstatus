@@ -1,6 +1,6 @@
-============
+=============
 vmod_rtstatus
-============
+=============
 
 -------------------------------
 Varnish Real-Time Status Module
@@ -25,7 +25,7 @@ FUNCTIONS
 =========
 
 rtstatus
------
+--------
 
 Prototype
         ::
