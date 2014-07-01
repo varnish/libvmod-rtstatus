@@ -161,20 +161,65 @@ director(struct sess*sp,char *p)
   return p;
 }
 ////////////////////////////////////////////////////////
+char*
+vsc_c_main(char *p)
+{
+  char *buf=malloc(200);
+  struct VSM_data *vd;
+  const struct VSC_C_main *VSC_C_main;
+  vd= VSM_New();
+  VSC_Setup(vd);
 
+  if (VSC_Open(vd, 1))
+    exit(1); 
+  VSC_C_main = VSC_Main(vd);
+  strcat(p, "Client conn accepted: ");
+  sprintf(buf, "%d\n",VSC_C_main->client_conn);
+  strcat(p,buf);
+  strcat(p, "Client conn dropped: ");
+  sprintf(buf, "%d\n",VSC_C_main->client_drop);
+  strcat(p,buf);
+  strcat(p, "Client requ received: ");
+  sprintf(buf, "%d\n",VSC_C_main->client_req);
+  strcat(p,buf);
+  strcat(p, "Cache hit: ");
+  sprintf(buf, "%d\n",VSC_C_main->cache_hit);
+  strcat(p,buf);
+  strcat(p, "Cache hitpass: ");
+  sprintf(buf, "%d\n",VSC_C_main->cache_hitpass);
+  strcat(p,buf);
+  strcat(p, "Cache miss: ");
+  sprintf(buf, "%d\n",VSC_C_main->cache_miss);
+  strcat(p,buf);
+  strcat(p, "Client conn accepted: ");
+  sprintf(buf, "%d\n",VSC_C_main->client_conn);
+  strcat(p,buf);
+  strcat(p, "Client conn dropped: ");
+  sprintf(buf, "%d\n",VSC_C_main->client_drop);
+  strcat(p,buf);
+  strcat(p, "Client requ received: ");
+  sprintf(buf, "%d\n",VSC_C_main->client_req);
+  strcat(p,buf);
+
+
+  free(buf); 
+ return p;
+}
+
+///////////////////////////////////////////////////////
 const char *
 vmod_rtstatus(struct sess *sp)
 {
   char *p;
   unsigned max_sz;
-  //char buf[2048];
   char time_stamp[22];
   time_t now;
+  
+
   max_sz = WS_Reserve(sp->wrk->ws, 0);
   p = sp->wrk->ws->f;
   *p = 0;
- 
-	
+  
   strcat(p,"{\n");
   now = time(NULL);
 
@@ -187,10 +232,9 @@ vmod_rtstatus(struct sess *sp)
     grace(sp,p);
   }
   director(sp,p);
-  // STRCAT(p, buf, max_sz);
-  
+  vsc_c_main(p);
+ 
   WS_Release(sp->wrk->ws, strlen(p));
 
- 
   return (p);
 }
