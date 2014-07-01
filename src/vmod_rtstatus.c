@@ -25,31 +25,6 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 
 ///////////////////////////////////////////////////////////////////
 
-static char *
-wsstrncat(char *dest, const char *src, unsigned max_sz) {
-  if (strlen(dest) + strlen(src) >= max_sz) {
-    return (NULL);
-  }
-
-  return strcat(dest, src);
-}
-
-/* This lets us cat to a ws-allocated string and just abandon if we run
-   out of space. */
-#define STRCAT(dst, src, max)					\
-  do {								\
-    dst = wsstrncat(dst, src, max);				\
-    if (!dst) {							\
-      WS_Release(sp->wrk->ws, 0);				\
-      WSL(sp->wrk, SLT_Error, sp->fd,				\
-	  "Running out of workspace in vmod_backendhealth. "	\
-	  "Increase sess_workspace to fix this.");		\
-      return "";						\
-    }								\
-  } while(0)
-////////////////////////////////////////////////////////////////////
-
-
 char*
 grace(struct sess *sp, char *p)
 {
