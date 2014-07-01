@@ -1,56 +1,41 @@
 ============
-vmod_example
+vmod_rtstatus
 ============
 
-----------------------
-Varnish Example Module
-----------------------
+-------------------------------
+Varnish Real-Time Status Module
+-------------------------------
 
-:Author: Martin Blix Grydeland
-:Date: 2011-05-26
+:Author: Arianna Aondio
+:Date: 2014-07-01
 :Version: 1.0
-:Manual section: 3
 
 SYNOPSIS
 ========
 
-import example;
+import rtstatus;
 
 DESCRIPTION
 ===========
 
-Example Varnish vmod demonstrating how to write an out-of-tree Varnish vmod
+rtstatus vmod fetches(in realtime)from backend some counters
 for Varnish 3.0 and later.
-
-Implements the traditional Hello World as a vmod.
 
 FUNCTIONS
 =========
 
-hello
+rtstatus
 -----
 
 Prototype
         ::
 
-                hello(STRING S)
+                rtstatus( )
 Return value
 	STRING
-Description
-	Returns "Hello, " prepended to S
-Example
-        ::
-
-                set resp.http.hello = example.hello("World");
 
 INSTALLATION
 ============
-
-This is an example skeleton for developing out-of-tree Varnish
-vmods available from the 3.0 release. It implements the "Hello, World!" 
-as a vmod callback. Not particularly useful in good hello world 
-tradition,but demonstrates how to get the glue around a vmod working.
-
 The source tree is based on autotools to configure the building, and
 does also have the necessary bits in place to do functional unit tests
 using the varnishtest tool.
@@ -75,25 +60,27 @@ Make targets:
 
 In your VCL you could then use this vmod along the following lines::
         
-        import example;
+        import rtstatus;
 
-        sub vcl_deliver {
-                # This sets resp.http.hello to "Hello, World"
-                set resp.http.hello = example.hello("World");
-        }
+        sub vcl_recv {
+    		if (req.url ~ "/rtstatus") {
+        		error 800 "OK";
+    		}
+	}
 
-HISTORY
-=======
+	sub vcl_error {
+    		if(obj.status == 800){
+        		set obj.status = 200;
+        		synthetic rtstatus.rtstatus();
+        	return (deliver);
+    		}
+	}
 
-This manual page was released as part of the libvmod-example package,
-demonstrating how to create an out-of-tree Varnish vmod. For further
-examples and inspiration check the vmod directory:
-https://www.varnish-cache.org/vmods
 
 COPYRIGHT
 =========
 
 This document is licensed under the same license as the
-libvmod-example project. See LICENSE for details.
+libvmod-rtstatus project. See LICENSE for details.
 
-* Copyright (c) 2011 Varnish Software
+* Copyright (c) 2014 Varnish Software
