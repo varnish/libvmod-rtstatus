@@ -11,6 +11,7 @@
 #include "varnishapi.h"
 #include "vsm.h"
 #include "vcl.h"
+#include "vsl.h"
 
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
@@ -18,8 +19,15 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
   return (0);
 }
 
-///////////////////////////////////////////////////////////////////
 
+
+struct once_priv {
+	double	up;
+	int pad;
+};
+
+///////////////////////////////////////////////////////////////////
+/*
 char*
 grace(struct sess *sp, char *p)
 {
@@ -85,7 +93,7 @@ sess(struct sess *sp,char *p)
   strcat( p, "Varnish-Cache status:\n\n");
     
   /*real interesting counters*/
-  strcat(p, "{ \"Error code\": ");
+  /* strcat(p, "{ \"Error code\": ");
   sprintf(buf, "\"%d\" '",sp->err_code);
   strcat(p,buf);
   strcat(p,sp->err_reason);
@@ -113,7 +121,7 @@ sess(struct sess *sp,char *p)
 }
 
 ////////////////////////////////////////////////////////
-char*
+int 
 director(struct sess*sp,char *p)
 {
   char *buf=malloc(200);
@@ -128,99 +136,80 @@ director(struct sess*sp,char *p)
   strcat(p,sp->director->vcl_name);
   strcat(p,"\",\n\t}\n}\n\n");
   free(buf);
-  return p;
+  return 0;
 }
 ////////////////////////////////////////////////////////
 char*
-vsc_c_main(char *p)
+vsc_c_main(struct sess *sp,char *p)
 {
-  char *buf=malloc(200);
   struct VSM_data *vd;
   const struct VSC_C_main *VSC_C_main;
+  int i, counter = 1;
+  int count = 0;
+
   vd= VSM_New();
   VSC_Setup(vd);
 
   if (VSC_Open(vd, 1))
-    exit(1); 
+    exit(1);
+
   VSC_C_main = VSC_Main(vd);
-  strcat(p, "Client conn accepted: ");
-  sprintf(buf, "%d\n",VSC_C_main->client_conn);
-  strcat(p,buf);
-  strcat(p, "Client conn dropped: ");
-  sprintf(buf, "%d\n",VSC_C_main->client_drop);
-  strcat(p,buf);
-  strcat(p, "Client requ received: ");
-  sprintf(buf, "%d\n",VSC_C_main->client_req);
-  strcat(p,buf);
-  strcat(p, "Cache hit: ");
-  sprintf(buf, "%d\n",VSC_C_main->cache_hit);
-  strcat(p,buf);
-  strcat(p, "Cache hitpass: ");
-  sprintf(buf, "%d\n",VSC_C_main->cache_hitpass);
-  strcat(p,buf);
-  strcat(p, "Cache miss: ");
-  sprintf(buf, "%d\n",VSC_C_main->cache_miss);
-  strcat(p,buf);
-  strcat(p, "Backend conn success: ");
-  sprintf(buf, "%d\n",VSC_C_main->backend_conn);
-  strcat(p,buf);
-  strcat(p, "Backend conn. not attempted: ");
-  sprintf(buf, "%d\n",VSC_C_main->backend_unhealthy);
-  strcat(p,buf);
-  strcat(p, "Backend busy: ");
-  sprintf(buf, "%d\n",VSC_C_main->backend_busy);
-  strcat(p,buf);
-strcat(p, "Backend conn failures: ");
-  sprintf(buf, "%d\n",VSC_C_main->backend_fail);
-  strcat(p,buf);
-  strcat(p, "Backend reuses: ");
-  sprintf(buf, "%d\n",VSC_C_main->backend_reuse);
-  strcat(p,buf);
-  strcat(p, "Backend conn. was closed: ");
-  sprintf(buf, "%d\n",VSC_C_main->backend_toolate);
-  strcat(p,buf);
-  strcat(p, "Backedn recycles: ");
-  sprintf(buf, "%d\n",VSC_C_main->backend_recycle);
-  strcat(p,buf);
-  strcat(p, "Backend retry: ");
-  sprintf(buf, "%d\n",VSC_C_main->backend_retry);
-  strcat(p,buf);
-   strcat(p, "Num struct sess_mem: ");
-  sprintf(buf, "%d\n",VSC_C_main->n_sess_mem);
-  strcat(p,buf);
-  strcat(p, "Num sess: ");
-  sprintf(buf, "%d\n",VSC_C_main->n_sess);
-  strcat(p,buf);
-  strcat(p, "Num tot worker threads: ");
-  sprintf(buf, "%d\n",VSC_C_main->n_wrk);
-  strcat(p,buf);
-  strcat(p, "Num worker threads created: ");
-  sprintf(buf, "%d\n",VSC_C_main->n_wrk_create);
-  strcat(p,buf);
-  strcat(p, "Num worker threads not created: ");
-  sprintf(buf, "%d\n",VSC_C_main->n_wrk_failed);
-  strcat(p,buf);
-  strcat(p, "Num max worker threads: ");
-  sprintf(buf, "%d\n",VSC_C_main->n_wrk_max);
-  strcat(p,buf);
-  strcat(p, "Num backends: ");
-  sprintf(buf, "%d\n",VSC_C_main->n_backend);
-  strcat(p,buf);
+  char buf[1024];
+  while (count <1) {
+    if (counter){
+      (void) VSC_Iter(vd, show_counter_cb, NULL);
+      count++;
+    }
+    else {
+      assert(0);
+    }
+  }
   
-  free(buf); 
- return p;
-}
+  return p;
+  }*/
+//////////////////////////////////////////////////////
+
+int
+show_counter_cb(void *priv, const struct VSC_point *const pt)
+  {char tmp[2048];
+  int i;
+  
+  uint64_t val;
+
+  val=*(const volatile uint64_t*)pt->ptr;
+  i = 0;
+   
+  if (strcmp(pt->class, "")){
+    i += strcat(priv, pt->class);
+    strcat(priv, ".");
+  }
+  if (strcmp(pt->ident, "")){
+    i += strcat(priv, pt->ident);
+    strcat(priv,".");
+  }
+  i += strcat(priv, pt->name);
+   
+  strcat(priv, "\t\t");
+  strcat(priv,pt->desc);
+  sprintf(tmp,":   %d",val);
+  strcat(priv,tmp);
+  strcat(priv,"\n");
+  // strcat(priv,val);
+  // fprintf(f, " %s:\t %d\n", pt->desc,val);*/
+  return (0);
+   
+  }
 
 ///////////////////////////////////////////////////////
-const char *
+const char*
 vmod_rtstatus(struct sess *sp)
 {
   char *p;
   unsigned max_sz;
   char time_stamp[22];
   time_t now;
+  char *buf=malloc(2000);
   
-
   max_sz = WS_Reserve(sp->wrk->ws, 0);
   p = sp->wrk->ws->f;
   *p = 0;
@@ -231,14 +220,29 @@ vmod_rtstatus(struct sess *sp)
   (void)strftime(time_stamp, 22, "%Y-%m-%d T %H:%M:%S", localtime(&now));
   strcat(p,time_stamp);
   strcat(p,"\n}\n\n");
-  sess(sp,p);
+  /* sess(sp,p);
   object(sp,p);
   if(sp->exp.grace){
     grace(sp,p);
   }
-  director(sp,p);
-  vsc_c_main(p);
- 
+  //vsc_c_main(sp,p);
+  director(sp,p);*/
+
+  const struct VSC_point *const pt;
+  struct VSM_data *vd;
+  const struct VSC_C_main *VSC_C_main;
+  vd = VSM_New();
+  VSC_Setup(vd);
+
+  if (VSC_Open(vd, 1))
+    exit(1);
+  
+  VSC_C_main = VSC_Main(vd);
+  
+  (void)VSC_Iter(vd, show_counter_cb,(void *)p);
+
+  VSL(SLT_VCL_Log, 0, "after");
+
   WS_Release(sp->wrk->ws, strlen(p));
 
   return (p);
