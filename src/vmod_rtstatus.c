@@ -47,23 +47,19 @@ json_status(void *priv, const struct VSC_point *const pt)
 		strcat(priv,".");
 	}
 	i += strcat(priv, pt->name);
-	sprintf(tmp,"\": {");
-	strcat(priv,tmp);
+	strcat(priv,"\": {");
 
 	if (strcmp(pt->class, "")) {
-		sprintf(tmp,"type\": \"" );
-		strcat(priv,tmp);
+	        strcat(priv,"type\": \"");
 		strcat(priv,pt->class);
 		strcat(priv,"\", ");
 	}
 	if (strcmp(pt->ident, "")) {
-		sprintf(tmp,"\"ident\": \"" );
-		strcat(priv,tmp);
+	    	strcat(priv,"\"ident\": \"");
 		strcat(priv,pt->ident);
 		strcat(priv,"\", ");
 	}
-	sprintf(tmp,"\"descr\": \"" );
-	strcat(priv,tmp);
+	strcat(priv,"\"descr\": \"");
 	strcat(priv,pt->desc);
 	strcat(priv,"\", ");
 	sprintf(tmp,"\"value\": \"%d\"},\n",val );
@@ -89,7 +85,7 @@ vmod_rtstatus(struct sess *sp)
 	VSC_Setup(vd);
 
 	if (VSC_Open(vd, 1))
-		exit(1);
+		strcat(p,"\"Error\" :\"VSC can't be opened\"");
 	VSC_C_main = VSC_Main(vd);
 	strcat(p,"{\n");
 	now = time(NULL);
