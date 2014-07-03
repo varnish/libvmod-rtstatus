@@ -17,17 +17,18 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 {
   return (0);
 }
-//////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 char *
 director(struct sess *sp, char *p)
-{strcat(p,"\"DIRECTOR\": {\"name\":\"");
+{
+  strcat(p,"\"DIRECTOR\": {\"name\":\"");
   strcat(p, sp->director->name);
   strcat(p,"\", \"vcl_name\":\"");
   strcat(p,sp->director->vcl_name);
   strcat(p, "\"},\n");
   return p;
 }
-//////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 int
 json_status(void *priv, const struct VSC_point *const pt)
 {
@@ -68,10 +69,8 @@ json_status(void *priv, const struct VSC_point *const pt)
   strcat(priv,"\", ");
   sprintf(tmp,"\"value\": \"%d\"},\n",val );
   strcat(priv,tmp);
-
   return (0);
 }
-
 ///////////////////////////////////////////////////////
 const char*
 vmod_rtstatus(struct sess *sp)
@@ -100,11 +99,13 @@ vmod_rtstatus(struct sess *sp)
   strcat(p,time_stamp);
   strcat(p,"\n\n");
   director(sp,p);
- 
-  
   (void)VSC_Iter(vd, json_status,(void *)p);
   strcat(p, "}\n");
+  if (strlen(p)>=max_sz) {
+    WS_Release(sp->wrk->ws, 0);
+    WSL(sp->wrk, SLT_Error, sp->fd, "Running out of workspace in vmod_rtstatus. Increase sess_workspace to fix this.");
+    return ""; 
+  }
   WS_Release(sp->wrk->ws, strlen(p));
-
   return (p);
 }
