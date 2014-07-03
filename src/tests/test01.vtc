@@ -10,10 +10,11 @@ varnish v1 -vcl+backend {
 
 	sub vcl_recv {
 		error 200 "OK";
-	}
 
+	}
 	sub vcl_error {
 		synthetic rtstatus.rtstatus();
+		set obj.status = 200;
 		return (deliver);
 	}
 } -start
@@ -21,9 +22,8 @@ varnish v1 -vcl+backend {
 client c1 {
        txreq -url "/"
        rxresp
-       expect resp.bodylen == 122
+       expect resp.status == 200
 }
-
 client c1 -run
 
 
