@@ -7,7 +7,7 @@ Varnish Real-Time Status Module
 -------------------------------
 
 :Author: Arianna Aondio
-:Date: 2014-07-01
+:Date: 2014-07-03
 :Version: 1.0
 
 SYNOPSIS
@@ -18,7 +18,7 @@ import rtstatus;
 DESCRIPTION
 ===========
 
-rtstatus vmod fetches(in realtime)from backend some counters
+rtstatus vmod fetches counters in real time.
 for Varnish 3.0 and later.
 
 FUNCTIONS
