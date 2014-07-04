@@ -1,4 +1,5 @@
 #include "config.h"
+#include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -59,76 +60,77 @@ director(struct sess *sp, char *p, unsigned max_sz)
 }
 /////////////////////////////////////////////////////////
 int
-json_status(struct iter_priv *iter, const struct VSC_point *const pt)
+json_status(void *priv, const struct VSC_point *const pt)
 {
-    char *tmp;
+    char tmp[128];
+    struct iter_priv *iter = priv;
     uint64_t val;
-    val=*(const volatile uint64_t*)pt->ptr;
-       
-    STRCAT(iter->p,"\"",iter->ws_sz,iter->cpy_sp);
+    val = *(const volatile uint64_t*)pt->ptr;
+
+    STRCAT(iter->p,"\"", iter->ws_sz, iter->cpy_sp);
     if (strcmp(pt->class, "")) {
-	STRCAT(iter->p, pt->class,iter->ws_sz,iter->cpy_sp);
-	STRCAT(iter->p, ".",iter->ws_sz,iter->cpy_sp);
+	STRCAT(iter->p, pt->class,iter->ws_sz, iter->cpy_sp);
+	STRCAT(iter->p, ".", iter->ws_sz, iter->cpy_sp);
     }
     if (strcmp(pt->ident, "")) {
-	STRCAT(iter->p, pt->ident,iter->ws_sz,iter->cpy_sp);
-	STRCAT(iter->p,".",iter->ws_sz,iter->cpy_sp);
+	STRCAT(iter->p, pt->ident, iter->ws_sz, iter->cpy_sp);
+	STRCAT(iter->p, ".", iter->ws_sz, iter->cpy_sp);
     }
-    STRCAT(iter->p, pt->name,iter->ws_sz,iter->cpy_sp);
-    STRCAT(iter->p,"\": {",iter->ws_sz,iter->cpy_sp);
+    STRCAT(iter->p, pt->name, iter->ws_sz, iter->cpy_sp);
+    STRCAT(iter->p, "\": {", iter->ws_sz, iter->cpy_sp);
     if (strcmp(pt->class, "")) {
-	STRCAT(iter->p,"type\": \"",iter->ws_sz,iter->cpy_sp);
-	STRCAT(iter->p,pt->class,iter->ws_sz,iter->cpy_sp);
-	STRCAT(iter->p,"\", ",iter->ws_sz,iter->cpy_sp);
+	STRCAT(iter->p, "type\": \"", iter->ws_sz, iter->cpy_sp);
+	STRCAT(iter->p, pt->class, iter->ws_sz, iter->cpy_sp);
+	STRCAT(iter->p, "\", ", iter->ws_sz, iter->cpy_sp);
     }
     if (strcmp(pt->ident, "")) {
-	STRCAT(iter->p,"\"ident\": \"",iter->ws_sz,iter->cpy_sp);
-	STRCAT(iter->p,pt->ident,iter->ws_sz,iter->cpy_sp);
-	STRCAT(iter->p,"\", ",iter->ws_sz,iter->cpy_sp);
+	STRCAT(iter->p, "\"ident\": \"", iter->ws_sz, iter->cpy_sp);
+	STRCAT(iter->p, pt->ident, iter->ws_sz, iter->cpy_sp);
+	STRCAT(iter->p, "\", ", iter->ws_sz, iter->cpy_sp);
     }
-    STRCAT(iter->p,"\"descr\": \"",iter->ws_sz,iter->cpy_sp);
-    STRCAT(iter->p,pt->desc,iter->ws_sz,iter->cpy_sp);
-    STRCAT(iter->p,"\", ",iter->ws_sz,iter->cpy_sp);
-    asprintf(&tmp,"\"value\": \"%d\"},\n",val );
-    STRCAT(iter->p,tmp,iter->ws_sz,iter->cpy_sp);
-    free(tmp);
+    STRCAT(iter->p, "\"descr\": \"", iter->ws_sz, iter->cpy_sp);
+    STRCAT(iter->p, pt->desc, iter->ws_sz, iter->cpy_sp);
+    STRCAT(iter->p, "\", ", iter->ws_sz, iter->cpy_sp);
+    sprintf(tmp, "\"value\": \"%" PRIu64 "},\n", val );
+    STRCAT(iter->p, tmp, iter->ws_sz, iter->cpy_sp);
+
     return (0);
 }
 ///////////////////////////////////////////////////////
 const char*
 vmod_rtstatus(struct sess *sp)
 {
-    struct iter_priv *iter=malloc(sizeof(struct iter_priv));
+    struct iter_priv iter = { 0 };
     unsigned max_sz;
-    char time_stamp[22];
-    time_t now;
+    char *time_stamp;
     struct tm t_time;
     struct VSM_data *vd;
     const struct VSC_C_main *VSC_C_main;
+ 
+    time_stamp = VRT_time_string(sp, sp->t_req);
+
     vd = VSM_New();
     VSC_Setup(vd);
     
-    if (VSC_Open(vd, 1)){
+    if (VSC_Open(vd, 1)) {
 	WSL(sp->wrk, SLT_Error, sp->fd,"VSC can't be opened.");
-	return; }
-    max_sz = WS_Reserve(sp->wrk->ws,0);
-    (iter->p) = sp->wrk->ws->f;
-    *(iter->p) = 0;
-    iter->ws_sz = WS_Free(sp->wrk->ws);
-    iter->cpy_sp = sp;
-        
+	return; 
+    }
+    max_sz = WS_Reserve(sp->wrk->ws, 0);
+    iter.p = sp->wrk->ws->f;
+    *(iter.p) = 0;
+    iter.ws_sz = WS_Free(sp->wrk->ws);
+    iter.cpy_sp = sp;
     VSC_C_main = VSC_Main(vd);
-    STRCAT(iter->p,"{\n",max_sz, sp);
-    now = time(NULL);
-    (void)strftime(time_stamp, 22, "%Y-%m-%d T %H:%M:%S", localtime_r(&now,&t_time));
-    STRCAT(iter->p,"\"Timestamp\" : ",max_sz, sp);
-    STRCAT(iter->p,time_stamp,max_sz,sp);
-    STRCAT(iter->p,"\n\n",max_sz,sp);
-    director(sp,iter->p,max_sz);
-    (void)VSC_Iter(vd, json_status,iter);
-    STRCAT(iter->p, "}\n",max_sz,sp);
-    //VSC_Delete(vd);
+    STRCAT(iter.p, "{\n", max_sz, sp);
+    STRCAT(iter.p, "\"Timestamp\" : ",max_sz, sp);
+    STRCAT(iter.p, time_stamp,max_sz,sp);
+    STRCAT(iter.p, "\n\n",max_sz,sp);
+    director(sp, iter.p, max_sz);
+    (void)VSC_Iter(vd, json_status, &iter);
+    STRCAT(iter.p, "}\n",max_sz,sp);
     VSM_Delete(vd);
-    WS_Release(sp->wrk->ws, strlen(iter->p));
-    return (iter->p);
+    WS_Release(sp->wrk->ws, strlen(iter.p) + 1);
+    
+    return (iter.p);
 }
