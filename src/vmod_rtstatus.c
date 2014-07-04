@@ -127,7 +127,7 @@ vmod_rtstatus(struct sess *sp)
     } else	(void)VSC_Iter(vd, json_status,(void *)buffer);
     STRCAT(p,buffer,max_sz);
     STRCAT(p, "}\n",max_sz);
-
+    free(buffer);
     WS_Release(sp->wrk->ws, strlen(p));
     return (p);
 }
