@@ -24,10 +24,11 @@
 	}								\
     } while(0)                                                          \
 
+
 struct iter_priv{
     char *p;
-    unsigned q;
-    struct sess *iter_sp;
+    unsigned ws_sz;
+    struct sess *cpy_sp;
 };
 
 
@@ -64,32 +65,32 @@ json_status(struct iter_priv *iter, const struct VSC_point *const pt)
     uint64_t val;
     val=*(const volatile uint64_t*)pt->ptr;
        
-    STRCAT(iter->p,"\"",iter->q,iter->iter_sp);
+    STRCAT(iter->p,"\"",iter->ws_sz,iter->cpy_sp);
     if (strcmp(pt->class, "")) {
-	STRCAT(iter->p, pt->class,iter->q,iter->iter_sp);
-	STRCAT(iter->p, ".",iter->q,iter->iter_sp);
+	STRCAT(iter->p, pt->class,iter->ws_sz,iter->cpy_sp);
+	STRCAT(iter->p, ".",iter->ws_sz,iter->cpy_sp);
     }
     if (strcmp(pt->ident, "")) {
-	STRCAT(iter->p, pt->ident,iter->q,iter->iter_sp);
-	STRCAT(iter->p,".",iter->q,iter->iter_sp);
+	STRCAT(iter->p, pt->ident,iter->ws_sz,iter->cpy_sp);
+	STRCAT(iter->p,".",iter->ws_sz,iter->cpy_sp);
     }
-    STRCAT(iter->p, pt->name,iter->q,iter->iter_sp);
-    STRCAT(iter->p,"\": {",iter->q,iter->iter_sp);
+    STRCAT(iter->p, pt->name,iter->ws_sz,iter->cpy_sp);
+    STRCAT(iter->p,"\": {",iter->ws_sz,iter->cpy_sp);
     if (strcmp(pt->class, "")) {
-	STRCAT(iter->p,"type\": \"",iter->q,iter->iter_sp);
-	STRCAT(iter->p,pt->class,iter->q,iter->iter_sp);
-	STRCAT(iter->p,"\", ",iter->q,iter->iter_sp);
+	STRCAT(iter->p,"type\": \"",iter->ws_sz,iter->cpy_sp);
+	STRCAT(iter->p,pt->class,iter->ws_sz,iter->cpy_sp);
+	STRCAT(iter->p,"\", ",iter->ws_sz,iter->cpy_sp);
     }
     if (strcmp(pt->ident, "")) {
-	STRCAT(iter->p,"\"ident\": \"",iter->q,iter->iter_sp);
-	STRCAT(iter->p,pt->ident,iter->q,iter->iter_sp);
-	STRCAT(iter->p,"\", ",iter->q,iter->iter_sp);
+	STRCAT(iter->p,"\"ident\": \"",iter->ws_sz,iter->cpy_sp);
+	STRCAT(iter->p,pt->ident,iter->ws_sz,iter->cpy_sp);
+	STRCAT(iter->p,"\", ",iter->ws_sz,iter->cpy_sp);
     }
-    STRCAT(iter->p,"\"descr\": \"",iter->q,iter->iter_sp);
-    STRCAT(iter->p,pt->desc,iter->q,iter->iter_sp);
-    STRCAT(iter->p,"\", ",iter->q,iter->iter_sp);
+    STRCAT(iter->p,"\"descr\": \"",iter->ws_sz,iter->cpy_sp);
+    STRCAT(iter->p,pt->desc,iter->ws_sz,iter->cpy_sp);
+    STRCAT(iter->p,"\", ",iter->ws_sz,iter->cpy_sp);
     sprintf(tmp,"\"value\": \"%d\"},\n",val );
-    STRCAT(iter->p,tmp,iter->q,iter->iter_sp);
+    STRCAT(iter->p,tmp,iter->ws_sz,iter->cpy_sp);
     return (0);
 }
 ///////////////////////////////////////////////////////
@@ -100,34 +101,32 @@ vmod_rtstatus(struct sess *sp)
     unsigned max_sz;
     char time_stamp[22];
     time_t now;
+    struct tm t_time;
     struct VSM_data *vd;
     const struct VSC_C_main *VSC_C_main;
-    
-    max_sz = WS_Reserve(sp->wrk->ws,0);
-    (iter->p) = sp->wrk->ws->f;
-    *(iter->p) = 0;
-    iter->q = WS_Free(sp->wrk->ws);
-    iter->iter_sp = sp;
     vd = VSM_New();
     VSC_Setup(vd);
     
     if (VSC_Open(vd, 1)){
-	STRCAT(iter->p,"\"Error\" :\"VSC can't be opened\"",max_sz,sp);
-	WS_Release(sp->wrk->ws, strlen(iter->p));
-	return;
-    }
-    
+	WSL(sp->wrk, SLT_Error, sp->fd,"VSC can't be opened.");
+	return;    }
+    max_sz = WS_Reserve(sp->wrk->ws,0);
+    (iter->p) = sp->wrk->ws->f;
+    *(iter->p) = 0;
+    iter->ws_sz = WS_Free(sp->wrk->ws);
+    iter->cpy_sp = sp;
+        
     VSC_C_main = VSC_Main(vd);
     STRCAT(iter->p,"{\n",max_sz, sp);
     now = time(NULL);
-    (void)strftime(time_stamp, 22, "%Y-%m-%d T %H:%M:%S", localtime(&now));
+    (void)strftime(time_stamp, 22, "%Y-%m-%d T %H:%M:%S", localtime_r(&now,&t_time));
     STRCAT(iter->p,"\"Timestamp\" : ",max_sz, sp);
     STRCAT(iter->p,time_stamp,max_sz,sp);
     STRCAT(iter->p,"\n\n",max_sz,sp);
     director(sp,iter->p,max_sz);
     (void)VSC_Iter(vd, json_status,iter);
     STRCAT(iter->p, "}\n",max_sz,sp);
-    VSC_Delete(vd);
+    //VSC_Delete(vd);
     VSM_Delete(vd);
     WS_Release(sp->wrk->ws, strlen(iter->p));
     return (iter->p);
