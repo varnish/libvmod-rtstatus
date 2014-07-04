@@ -14,6 +14,40 @@
 
 #define MAX_SZ 1024
 
+/* This lets us cat to a ws-allocated string and just abandon if we run
+   out of space. */
+#define STRCAT(dst, src, max)						\
+    do {								\
+	dst = wsstrncat(dst, src, max);					\
+	if (!dst) {							\
+	 WS_Release(sp->wrk->ws, 0);					\
+	     WSL(sp->wrk, SLT_Error, sp->fd,				\
+		"Running out of workspace in vmod_backendhealth. "	\
+		"Increase sess_workspace to fix this.");		\
+	    return "";							\
+	}								\
+    } while(0)
+
+#define STRCATITER(dst, src, max,sp)					\
+    do {								\
+	dst = wsstrncat(dst, src, max);					\
+	if (!dst) {							\
+	 WS_Release(sp->wrk->ws, 0);					\
+	     WSL(sp->wrk, SLT_Error, sp->fd,				\
+		"Running out of workspace in vmod_backendhealth. "	\
+		"Increase sess_workspace to fix this.");		\
+	    return "";							\
+	}								\
+    } while(0)
+
+
+struct iter_priv{
+    char *p;
+    unsigned q;
+    struct sess *iter_sp;
+};
+
+
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 {
@@ -28,20 +62,6 @@ wsstrncat(char *dest, const char *src, unsigned max_sz) {
 
     return strcat(dest, src);
 }
-
-/* This lets us cat to a ws-allocated string and just abandon if we run
-   out of space. */
-#define STRCAT(dst, src, max)						\
-    do {								\
-	dst = wsstrncat(dst, src, max);					\
-	if (!dst) {							\
-	    WS_Release(sp->wrk->ws, 0);					\
-	    WSL(sp->wrk, SLT_Error, sp->fd,				\
-		"Running out of workspace in vmod_backendhealth. "	\
-		"Increase sess_workspace to fix this.");		\
-	    return "";							\
-	}								\
-    } while(0)
 /////////////////////////////////////////////////////////
 char *
 director(struct sess *sp, char *p, unsigned max_sz)
@@ -54,69 +74,57 @@ director(struct sess *sp, char *p, unsigned max_sz)
     return p;
 }
 /////////////////////////////////////////////////////////
-struct iter_priv{
-    char *p;
-    char *q;
-};
-
 int
-json_status(void *iter, const struct VSC_point *const pt)
+json_status(struct iter_priv *iter, const struct VSC_point *const pt)
 {
     char tmp[1024];
-    int i;
     uint64_t val;
-    (struct iter_priv *)iter;
     val=*(const volatile uint64_t*)pt->ptr;
-    i = 0;
-   
-    
-    strcat(iter,"\"");
-    /* if (strcmp(pt->class, "")) {
-	i += strcat(priv, pt->class);
-	strcat(priv, ".");
-    }
-    if (strcmp(pt->ident, "")) {
-	i += strcat(priv, pt->ident);
-	strcat(priv,".");
-    }
-    i += strcat(priv, pt->name);
-    strcat(priv,"\": {");
+       
+    STRCATITER(iter->p,"\"",iter->q,iter->iter_sp);
     if (strcmp(pt->class, "")) {
-	strcat(priv,"type\": \"");
-	strcat(priv,pt->class);
-	strcat(priv,"\", ");
+	STRCATITER(iter->p, pt->class,iter->q,iter->iter_sp);
+	STRCATITER(iter->p, ".",iter->q,iter->iter_sp);
+	}
+    if (strcmp(pt->ident, "")) {
+	STRCATITER(iter->p, pt->ident,iter->q,iter->iter_sp);
+	STRCATITER(iter->p,".",iter->q,iter->iter_sp);
+    }
+     STRCATITER(iter->p, pt->name,iter->q,iter->iter_sp);
+    STRCATITER(iter->p,"\": {",iter->q,iter->iter_sp);
+    if (strcmp(pt->class, "")) {
+	STRCATITER(iter->p,"type\": \"",iter->q,iter->iter_sp);
+	STRCATITER(iter->p,pt->class,iter->q,iter->iter_sp);
+	STRCATITER(iter->p,"\", ",iter->q,iter->iter_sp);
     }
     if (strcmp(pt->ident, "")) {
-	strcat(priv,"\"ident\": \"");
-	strcat(priv,pt->ident);
-	strcat(priv,"\", ");
+	STRCATITER(iter->p,"\"ident\": \"",iter->q,iter->iter_sp);
+	STRCATITER(iter->p,pt->ident,iter->q,iter->iter_sp);
+	STRCATITER(iter->p,"\", ",iter->q,iter->iter_sp);
     }
-    strcat(priv,"\"descr\": \"");
-    strcat(priv,pt->desc);
-    strcat(priv,"\", ");
+    STRCATITER(iter->p,"\"descr\": \"",iter->q,iter->iter_sp);
+    STRCATITER(iter->p,pt->desc,iter->q,iter->iter_sp);
+    STRCATITER(iter->p,"\", ",iter->q,iter->iter_sp);
     sprintf(tmp,"\"value\": \"%d\"},\n",val );
-    strcat(priv,tmp);*/
+    STRCATITER(iter->p,tmp,iter->q,iter->iter_sp);
     return (0);
 }
-
 ///////////////////////////////////////////////////////
-
-
 const char*
 vmod_rtstatus(struct sess *sp)
 {
     struct iter_priv *iter=malloc(sizeof(struct iter_priv));
-    //char *p;
     unsigned max_sz;
     char time_stamp[22];
     time_t now;
     struct VSM_data *vd;
     const struct VSC_C_main *VSC_C_main;
-    char *buffer=malloc(2048);
+    
     max_sz = WS_Reserve(sp->wrk->ws,0);
     (iter->p) = sp->wrk->ws->f;
     *(iter->p) = 0;
-    // *(iter->q)=(char *)WS_Free(sp->wrk->ws);
+    iter->q = WS_Free(sp->wrk->ws);
+    iter->iter_sp = sp;
     
     vd = VSM_New();
     VSC_Setup(vd);
@@ -138,10 +146,9 @@ vmod_rtstatus(struct sess *sp)
 	WS_Release(sp->wrk->ws, strlen(iter->p));
 	WSL(sp->wrk, SLT_Error, sp->fd, "Running out of workspace in vmod_rtstatus. Increase sess_workspace to fix this.");
 	return "";
-    } else	(void)VSC_Iter(vd, json_status,(void *)buffer);
-    STRCAT(iter->p,buffer,max_sz);
+    } else	(void)VSC_Iter(vd, json_status,iter);
+    
     STRCAT(iter->p, "}\n",max_sz);
-    free(buffer);
     WS_Release(sp->wrk->ws, strlen(iter->p));
     return (iter->p);
 }
