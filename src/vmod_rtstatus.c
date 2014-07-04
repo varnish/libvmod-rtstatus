@@ -22,7 +22,7 @@
 		"Increase sess_workspace to fix this.");		\
 	    return "";							\
 	}								\
-    } while(0)                                                          \
+    } while(0)								\
 
 
 struct iter_priv{
@@ -61,7 +61,7 @@ director(struct sess *sp, char *p, unsigned max_sz)
 int
 json_status(struct iter_priv *iter, const struct VSC_point *const pt)
 {
-    char tmp[1024];
+    char *tmp;
     uint64_t val;
     val=*(const volatile uint64_t*)pt->ptr;
        
@@ -89,8 +89,9 @@ json_status(struct iter_priv *iter, const struct VSC_point *const pt)
     STRCAT(iter->p,"\"descr\": \"",iter->ws_sz,iter->cpy_sp);
     STRCAT(iter->p,pt->desc,iter->ws_sz,iter->cpy_sp);
     STRCAT(iter->p,"\", ",iter->ws_sz,iter->cpy_sp);
-    sprintf(tmp,"\"value\": \"%d\"},\n",val );
+    asprintf(&tmp,"\"value\": \"%d\"},\n",val );
     STRCAT(iter->p,tmp,iter->ws_sz,iter->cpy_sp);
+    free(tmp);
     return (0);
 }
 ///////////////////////////////////////////////////////
@@ -109,7 +110,7 @@ vmod_rtstatus(struct sess *sp)
     
     if (VSC_Open(vd, 1)){
 	WSL(sp->wrk, SLT_Error, sp->fd,"VSC can't be opened.");
-	return;    }
+	return; }
     max_sz = WS_Reserve(sp->wrk->ws,0);
     (iter->p) = sp->wrk->ws->f;
     *(iter->p) = 0;
