@@ -1,0 +1,32 @@
+varnishtest "Test rtstatus vmod"
+
+server s1 {
+       rxreq
+       txresp
+} -start
+
+varnish v1 -vcl+backend {
+	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
+	sub vcl_recv {
+	    if(regsub(rtstatus.rtstatus(), "^", "error")) {
+	    		  error 503;
+	    }
+	}
+	sub vcl_error {
+	    if(obj.status == 503) {
+	    		  synthetic rtstatus.rtstatus();
+			  set obj.status = 503;
+			  return (deliver);
+			  }
+	}
+	
+} -start
+
+client c1 {
+       txreq -url "/"
+       rxresp
+       expect resp.status == 503
+       expect resp.bodylen != 5
+}
+client c1 -run
+
