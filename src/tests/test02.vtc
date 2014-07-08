@@ -1,32 +1,44 @@
-varnishtest "Test rtstatus vmod"
+varnishtest "Test rtstatus servers"
 
 server s1 {
        rxreq
        txresp
 } -start
 
-varnish v1 -vcl+backend {
-	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
-	sub vcl_recv {
-	    if(regsub(rtstatus.rtstatus(), "^", "error")) {
-	    		  error 503;
-	    }
-	}
-	sub vcl_error {
-	    if(obj.status == 503) {
-	    		  synthetic rtstatus.rtstatus();
-			  set obj.status = 503;
-			  return (deliver);
-			  }
-	}
-	
+
+server s2 {
+       rxreq
+       txresp
 } -start
 
+
+varnish v1 -vcl+backend {
+	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
+	
+	director foo random {
+		{ .backend = s1; .weight = 1; }
+		{ .backend = s2; .weight = 1; }
+	}
+
+	sub vcl_recv {
+		if( req.url ~ "/rtstatus") {
+			set req.backend = foo;
+			error 200 "OK";
+		}
+	}
+	sub vcl_error {
+		if(obj.status == 200) {
+			synthetic rtstatus.rtstatus();
+			return (deliver);
+		}
+	}
+} -start
+
+
 client c1 {
-       txreq -url "/"
-       rxresp
-       expect resp.status == 503
-       expect resp.bodylen != 5
+	txreq -url "/rtstatus"
+	rxresp
+	expect resp.status == 200		
 }
 client c1 -run
 
