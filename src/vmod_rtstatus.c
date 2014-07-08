@@ -46,18 +46,26 @@ wsstrncat(char *dest, const char *src, struct sess *sp) {
     return strcat(dest, src);
 }
 /////////////////////////////////////////////////////////
+int 
+general_info(struct iter_priv *iter)
+{
+    STRCAT(iter->p, "\"Timestamp\" : ", iter->cpy_sp);
+    STRCAT(iter->p,iter->time_stamp,iter->cpy_sp);
+    STRCAT(iter->p, ",\n\"Varnish Version\" : ", iter->cpy_sp); 
+    STRCAT(iter->p, VCS_version,iter->cpy_sp);
+    STRCAT(iter->p, ",\n",iter->cpy_sp);    
+    return (0);
+}
+////////////////////////////////////////////////////////
 int
 director(struct iter_priv *iter)
 {
-     STRCAT(iter->p, "\"Timestamp\" : ", iter->cpy_sp);
-    STRCAT(iter->p,iter->time_stamp,iter->cpy_sp);
-    STRCAT(iter->p, "\n\n", iter->cpy_sp);
-    STRCAT(iter->p,"\"DIRECTOR\": {\"name\":\"",iter->cpy_sp);
+    STRCAT(iter->p,"\"Director\": {\"name\":\"",iter->cpy_sp);
     STRCAT(iter->p, iter->cpy_sp->director->name, iter->cpy_sp);
     STRCAT(iter->p,"\", \"vcl_name\":\"", iter->cpy_sp);
     STRCAT(iter->p,iter->cpy_sp->director->vcl_name, iter->cpy_sp);
-    STRCAT(iter->p, "\"},\n", iter->cpy_sp);
-    
+    STRCAT(iter->p, "\"},\n\n", iter->cpy_sp);
+  
     return (0); 
 }
 /////////////////////////////////////////////////////////
@@ -106,8 +114,7 @@ vmod_rtstatus(struct sess *sp)
     struct tm t_time;
     struct VSM_data *vd;
     const struct VSC_C_main *VSC_C_main;
-    //char *time_stamp;
-    
+        
     vd = VSM_New();
     VSC_Setup(vd);
     
@@ -117,12 +124,12 @@ vmod_rtstatus(struct sess *sp)
 	return ""; 
     }
     iter.time_stamp = VRT_time_string(sp,sp->t_req);
-   
     WS_Reserve(sp->wrk->ws, 0);
     iter.p = sp->wrk->ws->f;
     *(iter.p) = 0;
     iter.cpy_sp = sp;
     VSC_C_main = VSC_Main(vd);
+    general_info(&iter);
     director(&iter);
     (void)VSC_Iter(vd, json_status, &iter);
     VSM_Delete(vd);
