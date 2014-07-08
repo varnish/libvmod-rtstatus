@@ -29,7 +29,7 @@
 struct iter_priv{
     char *p;
     struct sess *cpy_sp;
-    char *time_stamp;
+  
 };
 
 int
@@ -48,11 +48,8 @@ wsstrncat(char *dest, const char *src, struct sess *sp) {
 /////////////////////////////////////////////////////////
 int
 director(struct iter_priv *iter)
-{
+{  
     
-    STRCAT(iter->p, "\"Timestamp\" : ", iter->cpy_sp);
-    STRCAT(iter->p,iter->time_stamp,iter->cpy_sp);
-    STRCAT(iter->p, "\n\n", iter->cpy_sp);
     STRCAT(iter->p,"\"DIRECTOR\": {\"name\":\"",iter->cpy_sp);
     STRCAT(iter->p, iter->cpy_sp->director->name, iter->cpy_sp);
     STRCAT(iter->p,"\", \"vcl_name\":\"", iter->cpy_sp);
@@ -117,14 +114,17 @@ vmod_rtstatus(struct sess *sp)
 	VSM_Delete(vd);
 	return ""; 
     }
-    iter.time_stamp = VRT_time_string(iter.cpy_sp,iter.cpy_sp->t_req);
+    // time_stamp = VRT_time_string(iter.cpy_sp,iter.cpy_sp->t_req);
+    //STRCAT(iter.p, "\"Timestamp\" : ", iter.cpy_sp);
+    //STRCAT(iter->p,iter->time_stamp,iter->cpy_sp);
+    //STRCAT(iter->p, "\n\n", iter->cpy_sp);
     WS_Reserve(sp->wrk->ws, 0);
     iter.p = sp->wrk->ws->f;
     *(iter.p) = 0;
     iter.cpy_sp = sp;
     VSC_C_main = VSC_Main(vd);
     director(&iter);
-    (void)VSC_Iter(vd, json_status, &iter);
+     (void)VSC_Iter(vd, json_status, &iter);
     VSM_Delete(vd);
     WS_Release(sp->wrk->ws, strlen(iter.p) + 1);
     
