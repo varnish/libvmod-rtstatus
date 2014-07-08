@@ -9,18 +9,21 @@ varnish v1 -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
 
 	sub vcl_recv {
-		error 200 "OK";
-
+		if(req.url ~ "/rtstatus") {
+			error 800 "OK";
+		}
 	}
 	sub vcl_error {
-		synthetic rtstatus.rtstatus();
-		set obj.status = 200;
+		if( obj.status == 800){
+			synthetic rtstatus.rtstatus();
+			set obj.status = 200;
 		return (deliver);
+		}	
 	}
 } -start
 
 client c1 {
-       txreq -url "/"
+       txreq -url "/rtstatus"
        rxresp
        expect resp.status == 200
 }
