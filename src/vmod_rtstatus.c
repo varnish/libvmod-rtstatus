@@ -19,7 +19,7 @@
 	if (!dst) {							\
 	    WS_Release(sp->wrk->ws, 0);					\
 	    WSL(sp->wrk, SLT_Error, sp->fd,				\
-		"Running out of workspace in vmod_backendhealth. "	\
+		"Running out of workspace in vmod_rtstatus."		\
 		"Increase sess_workspace to fix this.");		\
 	    return 1;							\
 	}								\
@@ -40,7 +40,7 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 //////////////////////////////////////////////////////////
 static char *
 wsstrncat(char *dest, const char *src, struct sess *sp) {
-    if (sp->wrk->ws->r - sp->wrk->ws->f < strlen(src)) {
+    if (sp->wrk->ws->r <= sp->wrk->ws->f) {
 	return (NULL);
     }
     return strcat(dest, src);
