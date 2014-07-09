@@ -5,12 +5,10 @@ server s1 {
        txresp
 } -start
 
-
 server s2 {
        rxreq
        txresp
 } -start
-
 
 varnish v1 -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
@@ -33,7 +31,6 @@ varnish v1 -vcl+backend {
 		}
 	}
 } -start
-
 
 client c1 {
 	txreq -url "/rtstatus"
