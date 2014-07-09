@@ -21,7 +21,7 @@ DESCRIPTION
 A vmod that lets you query your Varnish server for a JSON object the
 counters. With the accompanied VCL code,
 visiting the URL /rtstatus on the Varnish server will produce an
-application/json response of the following format:
+application/json response of the following format::
 
 {
 	"Timestamp" : Wed, 09 Jul 2014 10:52:28 GMT,
