@@ -24,8 +24,8 @@ visiting the URL /rtstatus on the Varnish server will produce an
 application/json response of the following format:
 
 {
-	"Timestamp" : Wed, 09 Jul 2014 10:52:28 GMT,
-	"Varnish Version" : varnish-3.0.5 revision 8213a0b,
+	"Timestamp" : "Wed, 09 Jul 2014 10:52:28 GMT",
+	"Varnish Version" : "varnish-3.0.5 revision 8213a0b",
 	"Director": {"name":"simple", "vcl_name":"default"},
 
 	"client_conn": {"descr": "Client connections accepted", "value": "1},
