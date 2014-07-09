@@ -50,22 +50,21 @@ int
 general_info(struct iter_priv *iter)
 {
     STRCAT(iter->p, "\"Timestamp\" : ", iter->cpy_sp);
-    STRCAT(iter->p,iter->time_stamp,iter->cpy_sp);
+    STRCAT(iter->p, iter->time_stamp, iter->cpy_sp);
     STRCAT(iter->p, ",\n\"Varnish Version\" : ", iter->cpy_sp); 
-    STRCAT(iter->p, VCS_version,iter->cpy_sp);
-    STRCAT(iter->p, ",\n",iter->cpy_sp);    
+    STRCAT(iter->p, VCS_version, iter->cpy_sp);
+    STRCAT(iter->p, ",\n", iter->cpy_sp);    
     return (0);
 }
 ////////////////////////////////////////////////////////
 int
 director(struct iter_priv *iter)
 {
-    STRCAT(iter->p,"\"Director\": {\"name\":\"",iter->cpy_sp);
+    STRCAT(iter->p, "\"Director\": {\"name\":\"", iter->cpy_sp);
     STRCAT(iter->p, iter->cpy_sp->director->name, iter->cpy_sp);
-    STRCAT(iter->p,"\", \"vcl_name\":\"", iter->cpy_sp);
-    STRCAT(iter->p,iter->cpy_sp->director->vcl_name, iter->cpy_sp);
+    STRCAT(iter->p, "\", \"vcl_name\":\"", iter->cpy_sp);
+    STRCAT(iter->p, iter->cpy_sp->director->vcl_name, iter->cpy_sp);
     STRCAT(iter->p, "\"},\n\n", iter->cpy_sp);
-  
     return (0); 
 }
 /////////////////////////////////////////////////////////
@@ -77,7 +76,7 @@ json_status(void *priv, const struct VSC_point *const pt)
     uint64_t val;
     val = *(const volatile uint64_t*)pt->ptr;
 
-    STRCAT(iter->p,"\"", iter->cpy_sp);
+    STRCAT(iter->p, "\"", iter->cpy_sp);
     if (strcmp(pt->class, "")) {
 	STRCAT(iter->p, pt->class, iter->cpy_sp);
 	STRCAT(iter->p, ".", iter->cpy_sp);
@@ -101,9 +100,8 @@ json_status(void *priv, const struct VSC_point *const pt)
     STRCAT(iter->p, "\"descr\": \"", iter->cpy_sp);
     STRCAT(iter->p, pt->desc, iter->cpy_sp);
     STRCAT(iter->p, "\", ", iter->cpy_sp);
-    sprintf(tmp, "\"value\": \"%" PRIu64 "},\n", val );
+    sprintf(tmp, "\"value\": \"%" PRIu64 "},\n", val);
     STRCAT(iter->p, tmp, iter->cpy_sp);
-    
     return (0);
 }
 ///////////////////////////////////////////////////////
