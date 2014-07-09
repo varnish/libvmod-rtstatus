@@ -23,7 +23,7 @@ counters. With the accompanied VCL code,
 visiting the URL /rtstatus on the Varnish server will produce an
 application/json response of the following format::
 
-{
+    {
 	"Timestamp" : Wed, 09 Jul 2014 10:52:28 GMT,
 	
 	"Varnish Version" : varnish-3.0.5 revision 8213a0b,
@@ -35,7 +35,7 @@ application/json response of the following format::
 	"LCK.cli.locks": {type": "LCK", "ident": "cli", "descr": "Lock Operations", "value": "15},
 	
 	"VBE.default(127.0.0.1,,8080).happy": {type": "VBE", "ident": "default(127.0.0.1,,8080)", "descr": "Happy health probes", "value": "0},
-}
+    }
 
 FUNCTIONS
 =========
