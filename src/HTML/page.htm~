@@ -1,0 +1,26 @@
+<HTML>
+
+<HEAD>
+<TITLE>Varnish Status</TITLE>
+</HEAD>
+
+<BODY BACKGROUND="photo.jpg.gif" BGCOLOR=#886600 TEXT=#000011 LINK=000011 VLINK=#FF8000 ALINK=#FF0080>
+
+<CENTER>
+<TABLE BORDER=6>
+<TR><TD BGCOLOR=#000000><FONT COLOR=#FFFF00 SIZE=6 FACE="Times New Roman">&nbsp;VARNISH STATUS&nbsp;</FONT></TD></TR>
+</TABLE>
+</CENTER>
+<BR>
+<BR>
+<a href="file:counter.txt"">Click me!</a><BR>
+<BR>
+<BR>
+
+<HR>
+<CENTER>
+<ADDRESS>Arianna Aondio&nbsp;<A HREF="mailto:arianna.aondio@varnish-software.com"><IMG SRC="varnish_logo.gif" WIDTH=220 HEIGHT=64 ALIGN=MIDDLE BORDER=0 ALT="E-mail to Varnish-software.com"></A>&nbsp;&reg;2014</ADDRESS>
+</CENTER>
+</BODY>
+
+</HTML> 
