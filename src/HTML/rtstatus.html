@@ -3,112 +3,120 @@
   <head>
     <title>varnish status</title><center>
       <script>
-var varnishStatusURI = "/rtstatus", varnishUpdateInterval = 1000
+	var varnishStatusURI = "/rtstatus", varnishUpdateInterval = 1000
       </script>
 
       <style>
-body {
-background: white;
-color: black;
-font-family: Helvetica, Arial, sans-serif;
-}
+	body {
+	background: white;
+	color: black;
+	font-family: Helvetica, Arial, sans-serif;
+	}
 
-div.header {
-text-align: left;
-font-weight: bold;
-color: white;
-height: 60px;
-font-size: 20px;
-background-color: #637DB5
-}
+	div.header {
+	text-align: left;
+	font-weight: bold;
+	color: white;
+	height: 160px;
+	font-size: 20px;
+	background-color: #637DB5
+	}
 
-div.footer {
-text-align: left;
-background: #637DB5;
-}
+	div.footer {
+	text-align: left;
+	background: #637DB5;
+	}
 
-table.t1 {
-height:100%;
-width:100%;
-border: 4px solid black;
-cellpadding: 0px;
-cellspacing:0px
-background: white;
-}
+	table.t1 {
+	height:100%;
+	width:100%;
+	border: 4px solid black;
+	cellpadding: 0px;
+	cellspacing:0px
+	background: white;
+	}
+
+	h1 {
+	font-size: 12px;
+	text-align: left;
+	}
+
       </style>
     </center>
   </head>
 
   
- 
   
- <body>
-  <div class="header">
-    VARNISH STATUS&nbsp;
-  </div>
+  <body>
+    <div class="header">
+      VARNISH STATUS&nbsp;
+      <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
+      <script type="text/javascript">
 
-  <table class="t1">
-    <tr>
-      <td valign="top">
-<table width="450" height="650">
-<tr >
-<td height="30" style="font-weight:bold"><u>BASIC COUNTERS</u></td>
-</tr>	
-<tr>
-<td valign="top">Name</td>
-<td valign="top">Description</td>
-<td valign="top">Value</td>
-</tr>
-      </td>
-      </table>
-      <td valign="top">
-<table width="500" height="650">
-<tr>
-<td height="30" style="font-weight:bold"><u>TYPE LCK</u></td>
-</tr>	
-<tr>	
-<td valign="top">Name</td>
-<td valign="top">Identity</td>
-<td valign="top">Description</td>
-<td valign="top">Value</td>
-</tr>
-</table>
-      </td>
-      <td valign="top">
-<table width="500" height="215">
-<tr>
-<td height="30" style="font-weight:bold"><u>TYPE SMF</u><td>
-</tr>
-<tr>
-<td valign="top">Name</td>
-<td valign="top">Identity</td>
-<td valign="top">Description</td>
-<td valign="top">Value</td>
-</tr>
-</table>
-<table width="500" height="215">
-<tr>
-<td height="30" style="font-weight:bold"><u>TYPE SMA</u></td>
-</tr>
-<tr>
-<td valign="top">Name</td>
-<td valign="top">Identity</td>
-<td valign="top">Description</td>
-<td valign="top">Value</td>
-</tr>
-</table>
-<table width="500" height="220">
-<tr>
-<td height="30" style="font-weight:bold"><u>TYPE VBE</u></td>
-</tr>
-<tr>
-<td valign="top">Name</td>
-<td valign="top">Identity</td>
-<td valign="top">Description</td>
-<td valign="top">Value</td>
-</tr>
-</table>
-    </tr>
+	$.getJSON( "/rtstatus", function( data ) {
+	var items = [];	
+	items.push("<h1>" + data.Timestamp + "</h1>"); 
+	items.push("<h1>"+ "You're running: " + data.Varnish_Version  + "</h1>"); 
+	items.push( "<h1>" + "Director name:" + " " + data.Director.name + "       " + "VCL name:"+ " " + data.Director.vcl_name +"</h1>" );
+        $( "<ul/>", {
+	"class": "my-new-list",
+	html: items.join( "" )
+	}).appendTo( "div.header" );
+	})();		
+      </script>
+    </div>
+
+
+
+    <table class="t1">
+      <tr>
+	<td valign="top">
+	  <table width="450" height="650">
+	    <tr >
+	      <td height="30" style="font-weight:bold"><u>BASIC COUNTERS</u></td>
+	    </tr>	
+	    <tr>
+	      <td valign="top">Name</td>
+	      <td valign="top">Description</td>
+	      <td valign="top">Value</td>
+	    </tr>
+	</td>
+	</table>
+	<td valign="top">
+	  <table width="500" height="215">
+	    <tr>
+	      <td height="30" style="font-weight:bold"><u>TYPE SMF</u><td>
+	    </tr>
+	    <tr>
+	      <td valign="top">Name</td>
+	      <td valign="top">Identity</td>
+	      <td valign="top">Description</td>
+	      <td valign="top">Value</td>
+	    </tr>
+	  </table>
+	  <table width="500" height="215">
+	    <tr>
+	      <td height="30" style="font-weight:bold"><u>TYPE SMA</u></td>
+	    </tr>
+	    <tr>
+	      <td valign="top">Name</td>
+	      <td valign="top">Identity</td>
+	      <td valign="top">Description</td>
+	      <td valign="top">Value</td>
+	    </tr>
+	  </table>
+	  <table width="500" height="220">
+	    <tr>
+	      <td height="30" style="font-weight:bold"><u>TYPE VBE</u></td>
+	    </tr>
+	    <tr>
+	      <td valign="top">Name</td>
+	      <td valign="top">Identity</td>
+	      <td valign="top">Description</td>
+	      <td valign="top">Value</td>
+	    </tr>
+	  </table>
+      </tr>
 </td>
 </table>
 
@@ -118,26 +126,13 @@ background: white;
     <address>About <a HREF="https://www.varnish-cache.org/">Varnish-Cache</a></address>
     <address>Send e-mail to <a HREF="mailto:arianna.aondio@varnish-software.com">varnish-software.com</a></address>
   </div>
-		  
+  
   <div align="right" valign="top">
     <p>Looking for commercial support?<br /><a href="http://cta-service-cms2.hubspot.com/cs/c/?&amp;cta_guid=36a8d0bd-b6ee-428d-8a69-f8e86de78c38&amp;placement_guid=3706c685-e449-4915-94a9-e32a283c199d&amp;portal_id=209523&amp;redirect_url=UjSNZXzQ67gyZCbKkukCGJpkt6fCAagbhlCxBo6QZAdhlGnaJe2A47KR9Srqx1POdtxAU4Y/4jKw9Ptf1ivlJOAHySCqoYagk3F53rwzy9gsHro2d7xAz7M/kERkD/suedooehofpbXUg/JnB0dELDFQpXkYcMxr96XXxWSUxx7sP%2Bru7dvK84JAud7OptALXgdBAohhbT4Znypx%2BuxO%2BS26a1m0OA9w%2BHUwOnncH21udpXzecdZmORrUSIv/8K5&amp;iv=4ztJ1npls6E%3D&amp;hsutk=e1041ff0447c57017fcf305821706803&amp;utm_referrer=https%3A%2F%2Fwww.varnish-software.com%2F&amp;canon=https%3A%2F%2Fwww.varnish-software.com%2F"><img src="https://www.varnish-cache.org/sites/all/themes/varnish_foundation/images/varnish_plus.png" /></a><br /><a href="https://www.varnish-software.com/what-is-varnish-plus" class="button">Click for more</a></p>
   </div>
 
-<script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
-<script type="text/javascript">
 
-	$.getJSON( "/rtstatus", function( data ) {
-		var items = [];
-	var numero = 2;
-		$.each( data, function( key, val ) {
-			items.push( "<li id='" + name + "'>" + val + "</li>" );
-		});
-		$( "<ul/>", {
-		"class": "my-new-list",
-		html: items.join( "" )
-		}).appendTo( "body" );
-	})();
-
-</script>
 </body>
 </html> 
+
+
