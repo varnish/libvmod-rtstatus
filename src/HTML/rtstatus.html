@@ -18,33 +18,29 @@
 
   
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
-<script type="text/javascript">
-  setTimeout(function(){
-    location = ''
-  },3000)
-</script>
-
 
   <body>
     <div class="header">
       <p>VARNISH STATUS</p>
     </div>
     
-<div class="d1">
-    <script type="text/javascript">
-      $.getJSON( "/rtstatus", function( data ) {
-      var items = [];	
-      items.push("<h1>" + data.Timestamp + "</h1>"); 
-      items.push("<h1>"+ "You're running: " + data.Varnish_Version  + "</h1>"); 
-      items.push("<h1>" + "Director name:" + " " + data.Director.name + "</h1>" );
-      items.push("<h1>"+ "VCL name:"+ " " + data.Director.vcl_name + "</h1>");
-      $( "<ul/>", {
-      "class": "my-new-list",
-      html: items.join( "" )
-      }).appendTo( "div.header" );
-      })();		
-    </script>
-</div>    
+    <div class="d1">
+      <script type="text/javascript">
+
+	$.getJSON( "/rtstatus", function( data ) {
+	var items = [];	
+	items.push("<h1>" + data.Timestamp + "</h1>"); 
+	items.push("<h1>"+ "You're running: " + data.Varnish_Version  + "</h1>"); 
+	items.push("<h1>" + "Director name:" + " " + data.Director.name + "</h1>" );
+	items.push("<h1>"+ "VCL name:"+ " " + data.Director.vcl_name + "</h1>");
+	$( "<ul/>", {
+	"class": "my-new-list",
+	html: items.join( "" )
+	}).appendTo( "div.header" );
+	})();
+	
+      </script>
+    </div>    
 
 
     <div style="height:10%;width:25%;border:solid 5px">BASIC COUNTERS</div>
@@ -54,14 +50,13 @@
       var items = [];
       var cont = 0;
       $.each( data, function( key, val ) {
-      if(cont>3){
+      if(cont>5){
       if(!val.type){
       items.push( "<h1>"+ val.descr +"</h1>" );
       }
       }
       cont++;
       });
-
       $( "<h1/>", {
       "class": "my-new-list",
       html: items.join( "" )
@@ -69,15 +64,35 @@
       })();
     </script>
     
-<div class="d3" style="float:left;width:10%;height:100%;border:solid 3px;overflow:hidden;">Value</div>
-  <script type="text/javascript">
+    <div class="d3" style="float:left;width:10%;height:100%;border:solid 3px;overflow:hidden;text-align:left">Value</div>
+    <script type="text/javascript">
       $.getJSON( "/rtstatus", function( data ) {
       var items = [];
       var cont = 0;
       $.each( data, function( key, val ) {
-      if(cont>3){
+      if(cont>5){
       if(!val.type){
-      items.push( "<h1 id='" + key + "'>" + val.value +"</h1>" );
+      items.push( "<h1>"+val.value +"</h1>" );
+      }
+      }
+      cont++;
+      });
+      $( "<ul/>", {
+      "class": "my-new-list",
+      html: items.join( "" )
+      }).appendTo( "div.d3" );
+      })();
+    </script>
+
+    <div class="d4" style="float:left;height:100%;width:20%;border:solid 5px;text-align:left;">Type.Identity</div>
+    <script type="text/javascript">
+      $.getJSON( "/rtstatus", function( data ) {
+      var items = [];
+      var cont = 0;
+      $.each( data, function( key, val ) {
+      if(cont>5){
+      if(val.type === "SMF" || val.type === "SMA" || val.type === "VBE"){
+      items.push( "<h1>"+val.type+ "." + val.ident +"</h1>" );
       }
       }
       cont++;
@@ -86,72 +101,51 @@
       $( "<ul/>", {
       "class": "my-new-list",
       html: items.join( "" )
-      }).appendTo( "div.d3" );
+      }).appendTo( "div.d4" );
       })();
     </script>
 
-  <div class="d4" style="float:left;height:100%;width:10%;border:solid 5px">Type.Identity</div>
-  <script type="text/javascript">
-    $.getJSON( "/rtstatus", function( data ) {
-    var items = [];
-    var cont = 0;
-    $.each( data, function( key, val ) {
-    if(cont>3){
-    if(val.type === "SMF" || val.type === "SMA" || val.type === "VBE"){
-    items.push( "<h1 id='" + key + "'>"+val.type+ "." + val.ident +"</h1>" );
-    }
-    }
-    cont++;
-    });
+    <div class="d41" style="float:left;height:100%;width:15%;border:solid 5px;text-align:left;">Description</div>
+    <script type="text/javascript">
+      $.getJSON( "/rtstatus", function( data ) {
+      var items = [];
+      var cont = 0;
+      $.each( data, function( key, val ) {
+      if(cont>5){
+      if(val.type === "SMF" || val.type === "SMA"|| val.type === "VBE" ){
+      items.push( "<h1>" + val.descr +"</h1>" );
+      }
+      }
+      cont++;
+      });
 
-    $( "<ul/>", {
-    "class": "my-new-list",
-    html: items.join( "" )
-    }).appendTo( "div.d4" );
-    })();
-  </script>
+      $( "<ul/>", {
+      "class": "my-new-list",
+      html: items.join( "" )
+      }).appendTo( "div.d41" );
+      })();
+    </script>
 
-    <div class="d41" style="float:left;height:100%;width:10%;border:solid 5px">Description</div>
-<script type="text/javascript">
-    $.getJSON( "/rtstatus", function( data ) {
-    var items = [];
-    var cont = 0;
-    $.each( data, function( key, val ) {
-    if(cont>3){
-    if(val.type === "SMF" || val.type === "SMA"|| val.type === "VBE" ){
-    items.push( "<h1 id='" + key + "'>" + val.descr +"</h1>" );
-    }
-    }
-    cont++;
-    });
-
-    $( "<ul/>", {
-    "class": "my-new-list",
-    html: items.join( "" )
-    }).appendTo( "div.d41" );
-    })();
-  </script>
-
-<div class="d42" style="float:left;height:100%;width:10%;border:solid 5px">Value</div>
-<script type="text/javascript">
-    $.getJSON( "/rtstatus", function( data ) {
-    var items = [];
-    var cont = 0;
-    $.each( data, function( key, val ) {
-    if(cont>3){
-    if(val.type === "SMF"|| val.type === "SMA"|| val.type === "VBE" ){
-    items.push( "<h1 id='" + key + "'>" + val.value +"</h1>" );
-    }
-    }
-    cont++;
-    });
-
-    $( "<ul/>", {
-    "class": "my-new-list",
-    html: items.join( "" )
-    }).appendTo( "div.d42" );
-    })();
-  </script>
-
+    <div class="d42" style="float:left;height:100%;width:10%;border:solid 5px;text-align:left;">Value</div>
+    <script type="text/javascript">
+      $.getJSON( "/rtstatus", function( data ) {
+      var items = [];
+      var cont = 0;
+      $.each( data, function( key, val ) {
+      if(cont>5){
+      if(val.type === "SMF"|| val.type === "SMA"|| val.type === "VBE" ){
+      items.push( "<h1>" + val.value +"</h1>" );
+      }
+      }
+      cont++;
+      });
+      $( "<ul/>", {
+      "class": "my-new-list",
+      html: items.join( "" )
+      }).appendTo( "div.d42" );
+      })();
+    </script>
   </body>
 </html> 
+
+
