@@ -68,7 +68,7 @@ backend (struct iter_priv *iter)
 {
     int i;
     int cont=1;
-	  STRCAT(iter->p, "\n\t\"Backend\": [",iter->cpy_sp); 
+	  STRCAT(iter->p, "\t\"Backend\": [",iter->cpy_sp); 
     for (i = 1; i <iter->cpy_sp->vcl->ndirector; ++i) {
 	CHECK_OBJ_NOTNULL(iter->cpy_sp->vcl->director[i], DIRECTOR_MAGIC);
 	if (strcmp("simple", iter->cpy_sp->vcl->director[i]->name) == 0) {
@@ -88,7 +88,7 @@ backend (struct iter_priv *iter)
 	    
 	}
     }
-    STRCAT(iter->p, "]", iter->cpy_sp);
+    STRCAT(iter->p, "],\n", iter->cpy_sp);
     return (0);
 }
 ////////////////////////////////////////////////////////
@@ -165,32 +165,21 @@ rate (struct iter_priv *iter)
     struct timeval tv;
     double tt, lt, lhit, hit, lmiss, miss, hr, mr, ratio, up;
     char tmp[128];
-    double a1, a2, a3;
-	unsigned n1, n2, n3;
+    
     lhit = 0;
     lmiss = 0;
-   
     hit = VSC_C_main->cache_hit;
     miss = VSC_C_main->cache_miss;
     hr = (hit - lhit) / lt;
     mr = (miss - lmiss) / lt;
     lhit = hit;
     lmiss = miss;
-a1 = a2 = a3 = 0.0;
-		n1 = n2 = n3 = 0;
-    AZ(gettimeofday(&tv, NULL));
-    tt = tv.tv_usec * 1e-6 + tv.tv_sec;
-    lt = tt - lt;
-    
-    if (hr + mr != 0) {
-		ratio = hr / (hr + mr);
-
-    }
+    ratio = (hr / (hr + mr))*100;
 
     if(isnan(ratio))
-	STRCAT( iter->p, "Not", iter->cpy_sp);
+	STRCAT( iter->p, "\t\"hitrate\": \"Not\",\n", iter->cpy_sp);
     else{
-    sprintf( tmp, "%f", ratio);
+    sprintf( tmp, "\t\"hitrate\": \"%f\",\n", ratio);
     STRCAT(iter->p, tmp, iter->cpy_sp); 
     }
     
@@ -203,8 +192,8 @@ run_subroutine (struct iter_priv *iter, struct VSM_data *vd)
     STRCAT ( iter->p, "{\n", iter->cpy_sp);
     rate (iter);
     general_info (iter);
-    director (iter);
     backend (iter);
+    director (iter);
     (void) VSC_Iter (vd, json_status, iter);
     STRCAT ( iter->p, "\n}\n", iter->cpy_sp);
     return (0);
