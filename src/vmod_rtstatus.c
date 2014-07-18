@@ -5,6 +5,7 @@
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include "vrt.h"
 #include "bin/varnishd/cache.h"
 #include "vcc_if.h"
@@ -45,9 +46,9 @@ static char *
 wsstrncat (char *dest, const char *src, struct sess *sp)
 {
     if (sp->wrk->ws->r <= sp->wrk->ws->f)
-	{
-	    return (NULL);
-	}
+{
+return (NULL);
+}
     return strcat (dest, src);
 }
 
@@ -57,12 +58,39 @@ general_info (struct iter_priv *iter)
 {
     STRCAT (iter->p, "\t\"Timestamp\" : \"", iter->cpy_sp);
     STRCAT (iter->p, iter->time_stamp, iter->cpy_sp);
-    STRCAT (iter->p, "\",\n\t\"Varnish Version\" : \"", iter->cpy_sp);
+    STRCAT (iter->p, "\",\n\t\"Varnish_Version\" : \"", iter->cpy_sp);
     STRCAT (iter->p, VCS_version, iter->cpy_sp);
     STRCAT (iter->p, "\",\n", iter->cpy_sp);
     return (0);
 }
-
+int 
+backend (struct iter_priv *iter)
+{
+    int i;
+    int cont=1;
+	  STRCAT(iter->p, "\n\t\"Backend\": [",iter->cpy_sp); 
+    for (i = 1; i <iter->cpy_sp->vcl->ndirector; ++i) {
+	CHECK_OBJ_NOTNULL(iter->cpy_sp->vcl->director[i], DIRECTOR_MAGIC);
+	if (strcmp("simple", iter->cpy_sp->vcl->director[i]->name) == 0) {
+	    char buf[1024];
+	    int j, healthy;
+    
+	    healthy = VDI_Healthy(iter->cpy_sp->vcl->director[i], iter->cpy_sp);
+	    j = snprintf(buf, sizeof buf, "{\"%s\": \"%s\"}",
+			 iter->cpy_sp->vcl->director[i]->vcl_name,
+			 healthy ? "healthy" : "sick");
+	    assert(j >= 0);
+	    STRCAT(iter->p, buf, iter->cpy_sp);
+	    if(cont < iter->cpy_sp->vcl->ndirector - 1){
+		STRCAT(iter->p, ",", iter->cpy_sp);
+		       cont++;
+		       }
+	    
+	}
+    }
+    STRCAT(iter->p, "]", iter->cpy_sp);
+    return (0);
+}
 ////////////////////////////////////////////////////////
 int
 director (struct iter_priv *iter)
@@ -96,7 +124,8 @@ json_status (void *priv, const struct VSC_point *const pt)
 	    STRCAT (iter->p, pt->ident, iter->cpy_sp);
 	    STRCAT (iter->p, ".", iter->cpy_sp);
 	}
-    STRCAT (iter->p, pt->name, iter->cpy_sp);
+	STRCAT (iter->p, pt->name, iter->cpy_sp);
+    // STRCAT (iter->p, "counter", iter->cpy_sp);
     STRCAT (iter->p, "\": {", iter->cpy_sp);
     if (strcmp (pt->class, ""))
 	{
@@ -118,13 +147,64 @@ json_status (void *priv, const struct VSC_point *const pt)
     if (iter->jp) STRCAT( iter->p, "\n", iter->cpy_sp);
     return (0);
 }
+////////////////////////////////////////////////////
+
+static void
+myexp(double *acc, double val, unsigned *n, unsigned nmax)
+{
+
+	if (*n < nmax)
+		(*n)++;
+	(*acc) += (val - *acc) / (double)*n;
+}
+
 ///////////////////////////////////////////////////////
-int 
+int
+rate (struct iter_priv *iter)
+{
+    struct timeval tv;
+    double tt, lt, lhit, hit, lmiss, miss, hr, mr, ratio, up;
+    char tmp[128];
+    double a1, a2, a3;
+	unsigned n1, n2, n3;
+    lhit = 0;
+    lmiss = 0;
+   
+    hit = VSC_C_main->cache_hit;
+    miss = VSC_C_main->cache_miss;
+    hr = (hit - lhit) / lt;
+    mr = (miss - lmiss) / lt;
+    lhit = hit;
+    lmiss = miss;
+a1 = a2 = a3 = 0.0;
+		n1 = n2 = n3 = 0;
+    AZ(gettimeofday(&tv, NULL));
+    tt = tv.tv_usec * 1e-6 + tv.tv_sec;
+    lt = tt - lt;
+    
+    if (hr + mr != 0) {
+		ratio = hr / (hr + mr);
+
+    }
+
+    if(isnan(ratio))
+	STRCAT( iter->p, "Not", iter->cpy_sp);
+    else{
+    sprintf( tmp, "%f", ratio);
+    STRCAT(iter->p, tmp, iter->cpy_sp); 
+    }
+    
+    return (0);
+}
+///////////////////////////////////////////////////////
+int
 run_subroutine (struct iter_priv *iter, struct VSM_data *vd)
 {
     STRCAT ( iter->p, "{\n", iter->cpy_sp);
+    rate (iter);
     general_info (iter);
     director (iter);
+    backend (iter);
     (void) VSC_Iter (vd, json_status, iter);
     STRCAT ( iter->p, "\n}\n", iter->cpy_sp);
     return (0);
