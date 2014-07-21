@@ -40,7 +40,6 @@ init_function (struct vmod_priv *priv, const struct VCL_conf *conf)
 {
     return (0);
 }
-
 //////////////////////////////////////////////////////////
 static char *
 wsstrncat (char *dest, const char *src, struct sess *sp)
@@ -68,27 +67,25 @@ backend (struct iter_priv *iter)
 {
     int i;
     int cont=1;
-	  STRCAT(iter->p, "\t\"Backend\": [",iter->cpy_sp); 
+	
     for (i = 1; i <iter->cpy_sp->vcl->ndirector; ++i) {
 	CHECK_OBJ_NOTNULL(iter->cpy_sp->vcl->director[i], DIRECTOR_MAGIC);
 	if (strcmp("simple", iter->cpy_sp->vcl->director[i]->name) == 0) {
+	    STRCAT(iter->p, "\t\"Backend\": ", iter->cpy_sp); 
 	    char buf[1024];
 	    int j, healthy;
     
 	    healthy = VDI_Healthy(iter->cpy_sp->vcl->director[i], iter->cpy_sp);
-	    j = snprintf(buf, sizeof buf, "{\"%s\": \"%s\"}",
+	    j = snprintf(buf, sizeof buf, "{\"name\":\"%s\", \"value\": \"%s\"}",
 			 iter->cpy_sp->vcl->director[i]->vcl_name,
 			 healthy ? "healthy" : "sick");
 	    assert(j >= 0);
 	    STRCAT(iter->p, buf, iter->cpy_sp);
-	    if(cont < iter->cpy_sp->vcl->ndirector - 1){
-		STRCAT(iter->p, ",", iter->cpy_sp);
-		       cont++;
-		       }
-	    
+	    	    
 	}
+	STRCAT(iter->p, ",\n", iter->cpy_sp);
     }
-    STRCAT(iter->p, "],\n", iter->cpy_sp);
+    
     return (0);
 }
 ////////////////////////////////////////////////////////
@@ -102,7 +99,42 @@ director (struct iter_priv *iter)
     STRCAT (iter->p, "\"}", iter->cpy_sp);
     return (0);
 }
-
+////////////////////////////////////////////////////
+static void
+myexp(double *acc, double val, unsigned *n, unsigned nmax)
+{
+	if (*n < nmax)
+		(*n)++;
+	(*acc) += (val - *acc) / (double)*n;
+}
+///////////////////////////////////////////////////////
+int
+rate (struct iter_priv *iter)
+{
+    struct timeval tv;
+    double tt, lt, lhit, hit, lmiss, miss, hr, mr, ratio, up;
+    char tmp[128];
+    
+    AZ(gettimeofday(&tv, NULL));
+    tt = tv.tv_usec * 1e-6 + tv.tv_sec;
+    lt = tt - lt;
+    
+    hit = VSC_C_main->cache_hit;
+    miss = VSC_C_main->cache_miss;
+    hr = (hit - lhit) / lt;
+    mr = (miss - lmiss) / lt;
+    lhit = hit;
+    lmiss = miss;
+    if(hr + mr != 0) {
+	ratio = (hr / (hr + mr) ) * 100;
+    }
+    up = VSC_C_main->uptime;
+    sprintf( tmp, "\t\"hitrate\": \"%8.0f \",\n", ratio);
+    STRCAT(iter->p, tmp, iter->cpy_sp); 
+    sprintf( tmp, "\t\"load\": \"%.0f \",\n", (VSC_C_main->client_req / up));
+    STRCAT(iter->p, tmp, iter->cpy_sp);
+    return (0);
+}
 /////////////////////////////////////////////////////////
 int
 json_status (void *priv, const struct VSC_point *const pt)
@@ -147,44 +179,7 @@ json_status (void *priv, const struct VSC_point *const pt)
     if (iter->jp) STRCAT( iter->p, "\n", iter->cpy_sp);
     return (0);
 }
-////////////////////////////////////////////////////
 
-static void
-myexp(double *acc, double val, unsigned *n, unsigned nmax)
-{
-
-	if (*n < nmax)
-		(*n)++;
-	(*acc) += (val - *acc) / (double)*n;
-}
-
-///////////////////////////////////////////////////////
-int
-rate (struct iter_priv *iter)
-{
-    struct timeval tv;
-    double tt, lt, lhit, hit, lmiss, miss, hr, mr, ratio, up;
-    char tmp[128];
-    
-    lhit = 0;
-    lmiss = 0;
-    hit = VSC_C_main->cache_hit;
-    miss = VSC_C_main->cache_miss;
-    hr = (hit - lhit) / lt;
-    mr = (miss - lmiss) / lt;
-    lhit = hit;
-    lmiss = miss;
-    ratio = (hr / (hr + mr))*100;
-
-    if(isnan(ratio))
-	STRCAT( iter->p, "\t\"hitrate\": \"Not\",\n", iter->cpy_sp);
-    else{
-    sprintf( tmp, "\t\"hitrate\": \"%f\",\n", ratio);
-    STRCAT(iter->p, tmp, iter->cpy_sp); 
-    }
-    
-    return (0);
-}
 ///////////////////////////////////////////////////////
 int
 run_subroutine (struct iter_priv *iter, struct VSM_data *vd)
