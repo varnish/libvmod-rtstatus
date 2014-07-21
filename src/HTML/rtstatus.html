@@ -6,146 +6,87 @@
 	var varnishStatusURI = "/rtstatus", varnishUpdateInterval = 1000
       </script>
       <style>
-	body {	background: white;color: black;	font-family: Helvetica, Arial, sans-serif;	}
-	div.header {text-align: left;font-weight: bold;	color: white;height: 160px;font-size: 20px;background-color: #637DB5}
-	div.footer {text-align: left;background: #637DB9;position:absolute;botto:0;}
-	h1 {font-size: 12px;text-align: left;}
+	body {	background: white;color: black;	font-family: Helvetica, Arial, sans-serif;}
       </style>
     </center>
   </head>
-
-
 
   
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
 
   <body>
-    <div class="header">
-      <p>VARNISH STATUS</p>
-    </div>
+    <h1>VARNISH REALTIME STATUS</h1>
     
-    <div class="d1">
+    <div class="d1" style="test-align:left;">
       <script type="text/javascript">
-
+	function info(){
 	$.getJSON( "/rtstatus", function( data ) {
+
 	var items = [];	
-	items.push("<h1>" + data.Timestamp + "</h1>"); 
-	items.push("<h1>"+ "You're running: " + data.Varnish_Version  + "</h1>"); 
-	items.push("<h1>" + "Director name:" + " " + data.Director.name + "</h1>" );
-	items.push("<h1>"+ "VCL name:"+ " " + data.Director.vcl_name + "</h1>");
+	var index = 0;
+	items.push("<p>" + data.Timestamp + "</p>");
+	items.push("<p>"+ "Varnish Version: " + data.Varnish_Version + "</p>");
+	items.push("<p>" + "Director name:" + " " + data.Director.name + "</p>" );
+	items.push("<p>"+ "VCL name:"+ " " + data.Director.vcl_name + "</p>");
+	items.push("<p>"+ "Hitrate:"+ " " + data.hitrate + "%"+ "</p>");
+        items.push("<p>"+ "Load:"+ " " + data.load + "req/s"+ "</p>");
 	$( "<ul/>", {
 	"class": "my-new-list",
 	html: items.join( "" )
-	}).appendTo( "div.header" );
+	}).appendTo( "div.d1" );
 	})();
-	
+	};
+	info();
       </script>
-    </div>    
+    </div>
+    <h1> Backends</h1>
+    <div class="d2">
+      <script type="text/javascript">
+	$.getJSON( "/rtstatus", function( data ) {
+	var items = [];
+	var cont = 0;
+	
+	$.each( data, function( key, val ) {
+	if(key === "Backend"){
+	items.push( "<body>" + "Name:"+val.name+"--> "+val.value+"</body><BR>" );
+						   }
+						   });
+						   $( "<ul/>", {
+						   "class": "my-new-list",
+						   html: items.join( "" )
+						   }).appendTo( "div.d2" );
+						   })();
+						   </script>
+						   </div>
+						   <script>
+						     function apriSpoiler(id){
+						     var a = document.getElementById(id).style;
+						     a.display = a.display=='block'?'none':'block'}
+						   </script>
+						   <a href="javascript:apriSpoiler('spoil1')">
+						     <b>Detailed counters</b></a>
+						   <div id="spoil1" class="spoiler" style="display: none;">
 
 
-    <div style="height:10%;width:25%;border:solid 5px">BASIC COUNTERS</div>
-    <div class="d2" style="float:left;width:15%;height:100%;border:solid 3px;overflow:hidden;text-align:left">Description</div>
-    <script type="text/javascript">
-      $.getJSON( "/rtstatus", function( data ) {
-      var items = [];
-      var cont = 0;
-      $.each( data, function( key, val ) {
-      if(cont>5){
-      if(!val.type){
-      items.push( "<h1>"+ val.descr +"</h1>" );
-      }
-      }
-      cont++;
-      });
-      $( "<h1/>", {
-      "class": "my-new-list",
-      html: items.join( "" )
-      }).appendTo( "div.d2" );
-      })();
-    </script>
-    
-    <div class="d3" style="float:left;width:10%;height:100%;border:solid 3px;overflow:hidden;text-align:left">Value</div>
-    <script type="text/javascript">
-      $.getJSON( "/rtstatus", function( data ) {
-      var items = [];
-      var cont = 0;
-      $.each( data, function( key, val ) {
-      if(cont>5){
-      if(!val.type){
-      items.push( "<h1>"+val.value +"</h1>" );
-      }
-      }
-      cont++;
-      });
-      $( "<ul/>", {
-      "class": "my-new-list",
-      html: items.join( "" )
-      }).appendTo( "div.d3" );
-      })();
-    </script>
-
-    <div class="d4" style="float:left;height:100%;width:20%;border:solid 5px;text-align:left;">Type.Identity</div>
-    <script type="text/javascript">
-      $.getJSON( "/rtstatus", function( data ) {
-      var items = [];
-      var cont = 0;
-      $.each( data, function( key, val ) {
-      if(cont>5){
-      if(val.type === "SMF" || val.type === "SMA" || val.type === "VBE"){
-      items.push( "<h1>"+val.type+ "." + val.ident +"</h1>" );
-      }
-      }
-      cont++;
-      });
-
-      $( "<ul/>", {
-      "class": "my-new-list",
-      html: items.join( "" )
-      }).appendTo( "div.d4" );
-      })();
-    </script>
-
-    <div class="d41" style="float:left;height:100%;width:15%;border:solid 5px;text-align:left;">Description</div>
-    <script type="text/javascript">
-      $.getJSON( "/rtstatus", function( data ) {
-      var items = [];
-      var cont = 0;
-      $.each( data, function( key, val ) {
-      if(cont>5){
-      if(val.type === "SMF" || val.type === "SMA"|| val.type === "VBE" ){
-      items.push( "<h1>" + val.descr +"</h1>" );
-      }
-      }
-      cont++;
-      });
-
-      $( "<ul/>", {
-      "class": "my-new-list",
-      html: items.join( "" )
-      }).appendTo( "div.d41" );
-      })();
-    </script>
-
-    <div class="d42" style="float:left;height:100%;width:10%;border:solid 5px;text-align:left;">Value</div>
-    <script type="text/javascript">
-      $.getJSON( "/rtstatus", function( data ) {
-      var items = [];
-      var cont = 0;
-      $.each( data, function( key, val ) {
-      if(cont>5){
-      if(val.type === "SMF"|| val.type === "SMA"|| val.type === "VBE" ){
-      items.push( "<h1>" + val.value +"</h1>" );
-      }
-      }
-      cont++;
-      });
-      $( "<ul/>", {
-      "class": "my-new-list",
-      html: items.join( "" )
-      }).appendTo( "div.d42" );
-      })();
-    </script>
-  </body>
-</html> 
-
-
+						     <script type="text/javascript">
+						       $.getJSON( "/rtstatus", function( data ) {
+						       var items = [];
+						       var cont = 0;
+						       
+						       $.each( data, function( key, val ) {
+						       
+						       if(cont>4){
+						       if(!val.type){
+						       items.push( "<body>"+ val.descr + ":" + "   " + val.value +"</body><BR>" );
+						       }
+						       }
+						       cont++;
+						       });
+						       $( "<ul/>", {
+						       "class": "my-new-list",
+						       html: items.join( "" )
+						       }).appendTo( "div.spoiler" );
+						       })();
+						     </script>
+						   </body>
+						   </html> 
