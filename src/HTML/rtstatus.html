@@ -1,99 +1,108 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>varnish status</title><center>
-      <script>
-	var varnishStatusURI = "/rtstatus", varnishUpdateInterval = 1000
-      </script>
-      <style>
-	body {	background: white;color: black;	font-family: Helvetica, Arial, sans-serif;}
-      </style>
-    </center>
-  </head>
+	<!DOCTYPE html>
+	<html>
+	  <head>
+		<title>varnish status</title><center>
+		  <script>
+		var varnishStatusURI = "/rtstatus", varnishUpdateInterval = 1000
+		  </script>
+		  <style>
+		body {	background: white;color: black;	font-family: Helvetica, Arial, sans-serif;}
+		  </style>
+		</center>
+	  </head>
 
-  
-  <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
+	  
+	  <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
 
-  <body>
-    <h1>VARNISH REALTIME STATUS</h1>
-    
-    <div class="d1" style="test-align:left;">
-      <script type="text/javascript">
-	var myVar = setInterval(function(){info()}, 1000);
-	function info(){
-	$.getJSON( "/rtstatus", function( data ) {
-	var items = [];	
-	var index = 0;
-	items.push("<p>" + data.Timestamp + "</p>");
-	items.push("<p>"+ "Varnish Version: " + data.Varnish_Version + "</p>");
-	items.push("<p>" + "Director name:" + " " + data.Director.name + "</p>" );
-	items.push("<p>"+ "VCL name:"+ " " + data.Director.vcl_name + "</p>");
-	items.push("<p>"+ "Hitrate:"+ " " + data.hitrate + "%"+ "</p>");
-        items.push("<p>"+ "Load:"+ " " + data.load + "req/s"+ "</p>");
-	$("div.d1").html("");
-	$( "<ul/>", {
-	"class": "my-new-list",
-	html: items.join( "" )
-	}).appendTo( "div.d1" );
-	})();
-	};
-	info();
-      </script>
-    </div>
+	  <body>
+		<h1>VARNISH REALTIME STATUS</h1>
+		
+		<div class="d1" style="test-align:left;">
+		  <script type="text/javascript">
+		var myVar = setInterval(function(){info()}, 1000);
+		function info(){
+		$.getJSON( "/rtstatus", function( data ) {
+		var items = [];	
+		var index = 0;
+		items.push("<p>" + data.Timestamp + "</p>");
+		items.push("<p>"+ "Varnish Version: " + data.Varnish_Version + "</p>");
+		items.push("<p>" + "Director name:" + " " + data.Director.name + "</p>" );
+		items.push("<p>"+ "VCL name:"+ " " + data.Director.vcl_name + "</p>");
+		items.push("<p>"+ "Hitrate:"+ " " + data.hitrate + "%"+ "</p>");
+		    items.push("<p>"+ "Load:"+ " " + data.load + "req/s"+ "</p>");
+		$("div.d1").html("");
+		$( "<ul/>", {
+		"class": "my-new-list",
+		html: items.join( "" )
+		}).appendTo( "div.d1" );
+		})();
+		};
+		info();
+		  </script>
+		</div>
 
 
-    <h1> Backends</h1>
-    <div class="d2">
-      <script type="text/javascript">
-	var myVar = setInterval(function(){backend()}, 1000);
+		
+		<h1> Backends</h1>
+		<div class="d2">
+		  <script type="text/javascript">
+	 var myVar = setInterval(function(){backend()}, 1000);
 	function backend(){
-	$.getJSON( "/rtstatus", function ( data ) {
-	var items = [];
-	var cont = 0;
+		$.getJSON( "/rtstatus", function( data ) {
+		var items = [];
+		var cont = 0;
 
-	$.each( data, function( key, val ) {
-	if(key === "Backend"){
-	items.push( "<body>" + "Name:"+val.name+"--> "+val.value+"</body><BR>" );
-	}
-	$( "<ul/>", {
-	"class": "my-new-list",
-	html: items.join( "" )
-	}).appendTo( "div.d2" ); )(); ;
+		$.each( data, function( key, val ) {
+		if(key === "Backend"){
+		items.push( "<body>" + "Name:"+val.name+"--> "+val.value+"</body><BR>" );
+							   }
+							   });
+	 $("div.d2").html("")
+							   $( "<ul/>", {
+							   "class": "my-new-list",
+							   html: items.join( "" )
+							   }).appendTo( "div.d2" );
+							   })();
+	};
 	backend();
-      </script>
-    </div>
+							   </script>
+							   </div>
 
-    <script>
-    function apriSpoiler(id){
-    var a = document.getElementById(id).style;
-    a.display = a.display=='block'?'none':'block'}
-    </script>
-    <a href="javascript:apriSpoiler('spoil1')">
-     <b>Detailed counters</b></a>
-    <div id="spoil1" class="spoiler" style="display: none;">
-    
-    <script type="text/javascript">
-    var myVar = setInterval(function(){counter()}, 1000);
-    function counter(){
-    $.getJSON( "/rtstatus", function( data ) {
-    var items = [];
-    var cont = 0;
-    $.each( data, function( key, val ) {
-    if(cont>5){
-    if(!val.type){
-    items.push( "<body>"+ val.descr + ":" + " " + val.value +"</body><BR>" );
-    }
-    }
-    cont++;
-    });
-    $("div.spoiler").html("")
-    $( "<ul/>", {
-    "class": "my-new-list",
-    html: items.join( "" )
-    }).appendTo( "div.spoiler" );
-    })();
-    };
-    counter();
-    </script>
-  </body>
-</html>
+							   <script>
+								 function apriSpoiler(id){
+								 var a = document.getElementById(id).style;
+								 a.display = a.display=='block'?'none':'block'}
+							   </script>
+							   <a href="javascript:apriSpoiler('spoil1')">
+								 <b>Detailed counters</b></a>
+							   <div id="spoil1" class="spoiler" style="display: none;">
+
+
+								 <script type="text/javascript">
+								   var myVar = setInterval(function(){counter()}, 1000);
+								   function counter(){
+								   $.getJSON( "/rtstatus", function( data ) {
+								   var items = [];
+								   var cont = 0;
+
+								   $.each( data, function( key, val ) {
+
+								   if(cont>5){
+								   if(!val.type){
+								   items.push( "<body>"+ val.descr + ":" + " " + val.value +"</body><BR>" );
+								   }
+								   }
+								   cont++;
+								   });
+								   $("div.spoiler").html("")
+								   $( "<ul/>", {
+								   "class": "my-new-list",
+								   html: items.join( "" )
+								   }).appendTo( "div.spoiler" );
+								   })();
+								   };
+								   counter();
+								 </script>
+							   </body>
+							   </html>
+
