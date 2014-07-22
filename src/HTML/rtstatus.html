@@ -54,51 +54,46 @@
 	$.each( data, function( key, val ) {
 	if(key === "Backend"){
 	items.push( "<body>" + "Name:"+val.name+"--> "+val.value+"</body><BR>" );
-						   }
-						   $("div.d2").html("");
-						   $( "<ul/>", {
-						   "class": "my-new-list",
-						   html: items.join( "" )
-						   }).appendTo( "div.d2" ); )(); ;
-						   backend();
+	}
+	$( "<ul/>", {
+	"class": "my-new-list",
+	html: items.join( "" )
+	}).appendTo( "div.d2" ); )(); ;
+	backend();
+      </script>
+    </div>
 
-						   </script>
-						   </div>
-
-						   <script>
-						     function apriSpoiler(id){
-						     var a = document.getElementById(id).style;
-						     a.display = a.display=='block'?'none':'block'}
-						   </script>
-						   <a href="javascript:apriSpoiler('spoil1')">
-						     <b>Detailed counters</b></a>
-						   <div id="spoil1" class="spoiler" style="display: none;">
-						     
-
-						     <script type="text/javascript">
-						       var myVar = setInterval(function(){counter()}, 1000);
-						       function counter(){
-						       $.getJSON( "/rtstatus", function( data ) {
-						       var items = [];
-						       var cont = 0;
-
-						       $.each( data, function( key, val ) {
-
-						       if(cont>5){
-						       if(!val.type){
-						       items.push( "<body>"+ val.descr + ":" + " " + val.value +"</body><BR>" );
-						       }
-						       }
-						       cont++;
-						       });
-						       $("div.spoiler").html("")
-						       $( "<ul/>", {
-						       "class": "my-new-list",
-						       html: items.join( "" )
-						       }).appendTo( "div.spoiler" );
-						       })();
-						       };
-						       counter();
-						     </script>
-						   </body>
-						   </html>
+    <script>
+    function apriSpoiler(id){
+    var a = document.getElementById(id).style;
+    a.display = a.display=='block'?'none':'block'}
+    </script>
+    <a href="javascript:apriSpoiler('spoil1')">
+     <b>Detailed counters</b></a>
+    <div id="spoil1" class="spoiler" style="display: none;">
+    
+    <script type="text/javascript">
+    var myVar = setInterval(function(){counter()}, 1000);
+    function counter(){
+    $.getJSON( "/rtstatus", function( data ) {
+    var items = [];
+    var cont = 0;
+    $.each( data, function( key, val ) {
+    if(cont>5){
+    if(!val.type){
+    items.push( "<body>"+ val.descr + ":" + " " + val.value +"</body><BR>" );
+    }
+    }
+    cont++;
+    });
+    $("div.spoiler").html("")
+    $( "<ul/>", {
+    "class": "my-new-list",
+    html: items.join( "" )
+    }).appendTo( "div.spoiler" );
+    })();
+    };
+    counter();
+    </script>
+  </body>
+</html>
