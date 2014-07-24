@@ -12,6 +12,7 @@ libvmod_rtstatus_la_SOURCES = \
 	vcc_if.h \
 	vmod_rtstatus.c
 
+
 vcc_if.c vcc_if.h: $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_rtstatus.vcc
 	@PYTHON@ $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_rtstatus.vcc
 
@@ -24,7 +25,7 @@ tests/*.vtc:
 check: $(VMOD_TESTS)
 
 EXTRA_DIST = \
-	vmod_rtstatus.vcc \
+	vmod_rtstatus.vcc 
 	$(VMOD_TESTS)
 
 CLEANFILES = $(builddir)/vcc_if.c $(builddir)/vcc_if.h

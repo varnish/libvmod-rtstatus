@@ -67,7 +67,6 @@ backend (struct iter_priv *iter)
 {
     int i;
     int cont=1;
-	
     for (i = 1; i <iter->cpy_sp->vcl->ndirector; ++i) {
 	CHECK_OBJ_NOTNULL(iter->cpy_sp->vcl->director[i], DIRECTOR_MAGIC);
 	if (strcmp("simple", iter->cpy_sp->vcl->director[i]->name) == 0) {
@@ -223,3 +222,5 @@ vmod_rtstatus (struct sess *sp)
 
     return (iter.p);
 }
+
+
