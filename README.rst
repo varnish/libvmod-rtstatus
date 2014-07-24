@@ -20,12 +20,14 @@ DESCRIPTION
 
 A vmod that lets you query your Varnish server for a JSON object the
 counters. With the accompanied VCL code,
-visiting the URL /rtstatus on the Varnish server will produce an
+
+visiting the URL /rtstatus.json on the Varnish server will produce an
 application/json response of the following format::
 
     {
-	"Timestamp" : Wed, 09 Jul 2014 10:52:28 GMT,
-	"Varnish Version" : varnish-3.0.5 revision 8213a0b,
+	"Timestamp" : "Thu, 24 Jul 2014 10:27:10 GMT",
+	"Varnish_Version" : "varnish-3.0.5 revision 8213a0b",
+	"Backend": {"name":"default", "value": "healthy"},
 	"Director": {"name":"simple", "vcl_name":"default"},
 	
 	"client_conn": {"descr": "Client connections accepted", "value": "1},
@@ -72,22 +74,32 @@ Make targets:
 
 In your VCL you could then use this vmod along the following lines::
         
+		import std;
         import rtstatus;
 
         sub vcl_recv {
-    		if (req.url ~ "/rtstatus") {
-        		error 800 "OK";
-    		}
-	}
+        	if (req.url ~ "/rtstatus.json") {
+            	error 700 "OK";
+        	}
 
-	sub vcl_error {
-    		if(obj.status == 800){
-        		set obj.status = 200;
-        		synthetic rtstatus.rtstatus();
+        	if (req.url ~ "/rtstatus") {
+                error 800 "OK";
+        	}
+		}
+
+		sub vcl_error {
+        	if(obj.status == 700){
+                set obj.status = 200;
+                synthetic rtstatus.rtstatus();
         	return (deliver);
-    		}
-	}
+        	}
 
+         	if(obj.status == 800) {
+                set obj.http.Content-Type = "text/html; charset=utf-8";
+                synthetic std.fileread("/home/arianna/libvmod-rtstatus/src/rtstatus.html");
+        	return (deliver);
+        	}
+		}
 
 COPYRIGHT
 =========
