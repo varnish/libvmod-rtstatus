@@ -57,22 +57,27 @@ wsstrncat (char *dest, const char *src, struct sess *sp)
 int
 general_info (struct iter_priv *iter)
 {
-  char tmp[128];
-  STRCAT (iter->p, "\t\"timestamp\" : \"", iter->cpy_sp);
-  STRCAT (iter->p, iter->time_stamp, iter->cpy_sp);
-  STRCAT (iter->p, "\",\n\t\"varnish_version\" : \"", iter->cpy_sp);
-  STRCAT (iter->p, VCS_version, iter->cpy_sp);
-  STRCAT (iter->p, "\",\n", iter->cpy_sp);
-  STRCAT (iter->p, "\t\"client_id\": \"", iter->cpy_sp);
-  STRCAT (iter->p, VRT_r_client_identity (iter->cpy_sp), iter->cpy_sp);
-  STRCAT (iter->p, "\",\n", iter->cpy_sp);
-  STRCAT (iter->p, "\t\"req_request\": \"", iter->cpy_sp);
-  STRCAT (iter->p, VRT_r_req_request (iter->cpy_sp), iter->cpy_sp);
-  STRCAT (iter->p, "\",\n", iter->cpy_sp);
-  sprintf (tmp, "\t\"varnish_port\": %d,\n", VRT_r_server_port (iter->cpy_sp));
-  STRCAT (iter->p, tmp, iter->cpy_sp);
-  sprintf (tmp, "\t\"obj_status\": %d,\n", VRT_r_obj_status (iter->cpy_sp));
-  STRCAT (iter->p, tmp, iter->cpy_sp);
+    char tmp[128];
+    STRCAT (iter->p, "\t\"req_request\": \"", iter->cpy_sp);
+    STRCAT (iter->p, VRT_r_req_request (iter->cpy_sp), iter->cpy_sp);
+    STRCAT (iter->p, "\",\n", iter->cpy_sp);
+    sprintf (tmp, "\t\"obj_status\": %d,\n", VRT_r_obj_status (iter->cpy_sp));
+    STRCAT (iter->p, tmp, iter->cpy_sp);
+    STRCAT (iter->p, "\t\"timestamp\" : \"", iter->cpy_sp);
+    STRCAT (iter->p, iter->time_stamp, iter->cpy_sp);
+    STRCAT (iter->p, "\",\n\t\"varnish_version\" : \"", iter->cpy_sp);
+    STRCAT (iter->p, VCS_version, iter->cpy_sp);
+    STRCAT (iter->p, "\",\n", iter->cpy_sp);
+    sprintf (tmp, "\t\"varnish_port\": %d,\n", VRT_r_server_port (iter->cpy_sp));
+    STRCAT (iter->p, tmp, iter->cpy_sp);
+    STRCAT (iter->p, "\t\"server_id\": \"", iter->cpy_sp);
+    STRCAT (iter->p, VRT_r_server_identity (iter->cpy_sp), iter->cpy_sp);
+    STRCAT (iter->p, "\",\n", iter->cpy_sp);
+    STRCAT (iter->p, "\t\"client_id\": \"", iter->cpy_sp);
+    STRCAT (iter->p, VRT_r_client_identity (iter->cpy_sp), iter->cpy_sp);
+    STRCAT (iter->p, "\",\n", iter->cpy_sp);
+ 
+  
   return (0);
 }
 

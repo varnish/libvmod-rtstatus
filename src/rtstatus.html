@@ -24,8 +24,9 @@
         var index = 0;
 	items.push("<p>"+  data.req_request + " " + data.obj_status + "</p>");
         items.push("<p>" + data.timestamp + "</p>");
-        items.push("<p>"+ "<b>Varnish Version:</b> " + data.varnish_version + "," + "</p>");
-        items.push("<p>"+ "<b>Varnish Port:</b> " + data.varnish_port + "," + "</p>");
+        items.push("<p>"+ "<b>Varnish version:</b> " + data.varnish_version + "," + "</p>");
+        items.push("<p>"+ "<b>Varnish port:</b> " + data.varnish_port + "," + "</p>");
+        items.push("<p>"+ "<b>Server identity:</b> " + data.server_id + "," + "</p>");
         items.push("<p>" + "<b>Director name:</b>" + " " + data.director.name + "," +  "</p>" );
         items.push("<p>"+ "<b>VCL name:</b>"+ " " + data.director.vcl_name + "," + "</p>");
         items.push("<p>"+ "<b>Hitrate:</b>"+ " " + data.hitrate + "%"+ "</p>");
