@@ -1,19 +1,19 @@
-Summary: Example VMOD for Varnish
-Name: vmod-example
+Summary: rtstatus VMOD for Varnish
+Name: vmod-rtstatus
 Version: 0.1
 Release: 1%{?dist}
 License: BSD
 Group: System Environment/Daemons
-Source0: libvmod-example.tar.gz
+Source0: libvmod-rtstatus.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: varnish > 3.0
 BuildRequires: make, python-docutils
 
 %description
-Example VMOD
+rtstatus VMOD
 
 %prep
-%setup -n libvmod-example
+%setup -n libvmod-rtstatus
 
 %build
 # this assumes that VARNISHSRC is defined on the rpmbuild command line, like this:
