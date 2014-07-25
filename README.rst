@@ -75,30 +75,28 @@ Make targets:
 In your VCL you could then use this vmod along the following lines::
         
 	import std;
-        import rtstatus;
+	import rtstatus;
 
-        sub vcl_recv {
-	       	if (req.url ~ "/rtstatus.json") {
-        	    	error 700 "OK";
+	sub vcl_recv {
+		if (req.url ~ "/rtstatus.json") {
+        		error 700 "OK";
         	}
-
-        	if (req.url ~ "/rtstatus") {
-                	error 800 "OK";
-        	}
+		if (req.url ~ "/rtstatus") {
+			error 800 "OK";
+		}
 	}
 
 	sub vcl_error {
-        	if(obj.status == 700){
-        	        set obj.status = 200;
-                	synthetic rtstatus.rtstatus();
-        	return (deliver);
-        	}
-
-         	if(obj.status == 800) {
-                	set obj.http.Content-Type = "text/html; charset=utf-8";
-                	synthetic std.fileread("/home/arianna/libvmod-rtstatus/src/rtstatus.html");
-        	return (deliver);
-        	}
+		if(obj.status == 700){
+			set obj.status = 200;
+			synthetic rtstatus.rtstatus();
+			return (deliver);
+		}
+		if(obj.status == 800) {
+			set obj.http.Content-Type = "text/html; charset=utf-8";
+			synthetic std.fileread("/home/arianna/libvmod-rtstatus/src/rtstatus.html");
+			return (deliver);
+			}
 	}
 
 COPYRIGHT
