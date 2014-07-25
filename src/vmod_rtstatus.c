@@ -57,24 +57,26 @@ wsstrncat (char *dest, const char *src, struct sess *sp)
 int
 general_info (struct iter_priv *iter)
 {
-    char tmp[128];
-    STRCAT (iter->p, "\t\"timestamp\" : \"", iter->cpy_sp);
-    STRCAT (iter->p, iter->time_stamp, iter->cpy_sp);
-    STRCAT (iter->p, "\",\n\t\"varnish_version\" : \"", iter->cpy_sp);
-    STRCAT (iter->p, VCS_version, iter->cpy_sp);
-    STRCAT (iter->p, "\",\n", iter->cpy_sp);
-    STRCAT (iter->p, "\t\"client_id\": \"", iter->cpy_sp);
-    STRCAT (iter->p,VRT_r_client_identity( iter->cpy_sp), iter->cpy_sp);
-    STRCAT (iter->p, "\",\n", iter->cpy_sp);
-    STRCAT (iter->p, "\t\"req_request\": \"", iter->cpy_sp);
-    STRCAT (iter->p,VRT_r_req_request( iter->cpy_sp), iter->cpy_sp);
-    STRCAT (iter->p, "\",\n", iter->cpy_sp);
-    sprintf (tmp,"\t\"varnish_port\": %d,\n",VRT_r_server_port(iter->cpy_sp));
-    STRCAT (iter->p,tmp, iter->cpy_sp);
-    sprintf (tmp,"\t\"obj_status\": %d,\n",VRT_r_obj_status(iter->cpy_sp));
-    STRCAT (iter->p,tmp, iter->cpy_sp);
-    return (0);
+  char tmp[128];
+  STRCAT (iter->p, "\t\"timestamp\" : \"", iter->cpy_sp);
+  STRCAT (iter->p, iter->time_stamp, iter->cpy_sp);
+  STRCAT (iter->p, "\",\n\t\"varnish_version\" : \"", iter->cpy_sp);
+  STRCAT (iter->p, VCS_version, iter->cpy_sp);
+  STRCAT (iter->p, "\",\n", iter->cpy_sp);
+  STRCAT (iter->p, "\t\"client_id\": \"", iter->cpy_sp);
+  STRCAT (iter->p, VRT_r_client_identity (iter->cpy_sp), iter->cpy_sp);
+  STRCAT (iter->p, "\",\n", iter->cpy_sp);
+  STRCAT (iter->p, "\t\"req_request\": \"", iter->cpy_sp);
+  STRCAT (iter->p, VRT_r_req_request (iter->cpy_sp), iter->cpy_sp);
+  STRCAT (iter->p, "\",\n", iter->cpy_sp);
+  sprintf (tmp, "\t\"varnish_port\": %d,\n",
+	   VRT_r_server_port (iter->cpy_sp));
+  STRCAT (iter->p, tmp, iter->cpy_sp);
+  sprintf (tmp, "\t\"obj_status\": %d,\n", VRT_r_obj_status (iter->cpy_sp));
+  STRCAT (iter->p, tmp, iter->cpy_sp);
+  return (0);
 }
+
 //////////////////////////////////////////////////////////
 int
 backend (struct iter_priv *iter)
@@ -87,23 +89,25 @@ backend (struct iter_priv *iter)
       CHECK_OBJ_NOTNULL (iter->cpy_sp->vcl->director[i], DIRECTOR_MAGIC);
       if (strcmp ("simple", iter->cpy_sp->vcl->director[i]->name) == 0)
 	{
-	 ;
+	  ;
 	  char buf[1024];
 	  int j, healthy;
 
 	  healthy =
 	    VDI_Healthy (iter->cpy_sp->vcl->director[i], iter->cpy_sp);
-	  j =  snprintf (buf, sizeof buf, "{\"name\":\"%s\", \"value\": \"%s\"}",
+	  j =
+	    snprintf (buf, sizeof buf, "{\"name\":\"%s\", \"value\": \"%s\"}",
 		      iter->cpy_sp->vcl->director[i]->vcl_name,
 		      healthy ? "healthy" : "sick");
 	  assert (j >= 0);
 	  STRCAT (iter->p, buf, iter->cpy_sp);
-	  if( i < (iter->cpy_sp->vcl->ndirector - 2)){
+	  if (i < (iter->cpy_sp->vcl->ndirector - 2))
+	    {
 	      STRCAT (iter->p, ",", iter->cpy_sp);
-	  }
+	    }
 	}
     }
-STRCAT (iter->p, "],\n", iter->cpy_sp);
+  STRCAT (iter->p, "],\n", iter->cpy_sp);
   return (0);
 }
 
@@ -151,7 +155,7 @@ rate (struct iter_priv *iter)
       ratio = (hr / (hr + mr)) * 100;
     }
   up = VSC_C_main->uptime;
-  sprintf (tmp, "\t\"hitrate\": %8.0f,\n", ratio);
+  sprintf (tmp, "\t\"hitrate\": %.2f,\n", ratio);
   STRCAT (iter->p, tmp, iter->cpy_sp);
   sprintf (tmp, "\t\"load\": %.0f,\n", (VSC_C_main->client_req / up));
   STRCAT (iter->p, tmp, iter->cpy_sp);
@@ -183,7 +187,6 @@ json_status (void *priv, const struct VSC_point *const pt)
       STRCAT (iter->p, ".", iter->cpy_sp);
     }
   STRCAT (iter->p, pt->name, iter->cpy_sp);
-  // STRCAT (iter->p, "counter", iter->cpy_sp);
   STRCAT (iter->p, "\": {", iter->cpy_sp);
   if (strcmp (pt->class, ""))
     {
@@ -211,7 +214,7 @@ json_status (void *priv, const struct VSC_point *const pt)
 int
 run_subroutine (struct iter_priv *iter, struct VSM_data *vd)
 {
- 
+
   STRCAT (iter->p, "{\n", iter->cpy_sp);
   rate (iter);
   general_info (iter);
