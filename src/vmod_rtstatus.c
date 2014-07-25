@@ -69,8 +69,7 @@ general_info (struct iter_priv *iter)
   STRCAT (iter->p, "\t\"req_request\": \"", iter->cpy_sp);
   STRCAT (iter->p, VRT_r_req_request (iter->cpy_sp), iter->cpy_sp);
   STRCAT (iter->p, "\",\n", iter->cpy_sp);
-  sprintf (tmp, "\t\"varnish_port\": %d,\n",
-	   VRT_r_server_port (iter->cpy_sp));
+  sprintf (tmp, "\t\"varnish_port\": %d,\n", VRT_r_server_port (iter->cpy_sp));
   STRCAT (iter->p, tmp, iter->cpy_sp);
   sprintf (tmp, "\t\"obj_status\": %d,\n", VRT_r_obj_status (iter->cpy_sp));
   STRCAT (iter->p, tmp, iter->cpy_sp);
@@ -89,14 +88,11 @@ backend (struct iter_priv *iter)
       CHECK_OBJ_NOTNULL (iter->cpy_sp->vcl->director[i], DIRECTOR_MAGIC);
       if (strcmp ("simple", iter->cpy_sp->vcl->director[i]->name) == 0)
 	{
-	  ;
 	  char buf[1024];
 	  int j, healthy;
 
-	  healthy =
-	    VDI_Healthy (iter->cpy_sp->vcl->director[i], iter->cpy_sp);
-	  j =
-	    snprintf (buf, sizeof buf, "{\"name\":\"%s\", \"value\": \"%s\"}",
+	  healthy = VDI_Healthy (iter->cpy_sp->vcl->director[i], iter->cpy_sp);
+	  j = snprintf (buf, sizeof buf, "{\"name\":\"%s\", \"value\": \"%s\"}",
 		      iter->cpy_sp->vcl->director[i]->vcl_name,
 		      healthy ? "healthy" : "sick");
 	  assert (j >= 0);
