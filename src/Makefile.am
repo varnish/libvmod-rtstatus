@@ -24,7 +24,7 @@ tests/*.vtc:
 check: $(VMOD_TESTS)
 
 EXTRA_DIST = \
-	vmod_rtstatus.vcc\ 
+	vmod_rtstatus.vcc\
 	$(VMOD_TESTS)
 
 CLEANFILES = $(builddir)/vcc_if.c $(builddir)/vcc_if.h
