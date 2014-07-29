@@ -4,7 +4,7 @@ vmoddir = $(VMODDIR)
 vmod_LTLIBRARIES = libvmod_rtstatus.la
 
 libvmod_rtstatus_la_LDFLAGS = -module -export-dynamic -avoid-version -shared
-libvmod_rtstatus_la_LIBADD = -L$(VARNISHSRC)/lib/libvarnishapi
+libvmod_rtstatus_la_LIBADD = -L$(VARNISHSRC)/lib/libvarnishapi -lvarnishapi
 
 libvmod_rtstatus_la_SOURCES = \
 	vcc_if.c \
