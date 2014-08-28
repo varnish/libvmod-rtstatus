@@ -2,6 +2,12 @@
 vmod_rtstatus
 =============
 
+
+.. image:: https://secure.travis-ci.org/aondio/libvmod-rtstatus.png
+   :alt: Travis CI badge
+   :target: http://travis-ci.org/libvmod-rtstatus
+
+
 -------------------------------
 Varnish Real-Time Status Module
 -------------------------------
