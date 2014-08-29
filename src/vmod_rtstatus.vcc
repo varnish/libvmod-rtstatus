@@ -1,4 +1,2 @@
-Module rtstatus
-Init init_function
-Function STRING rtstatus()
-
+$Module rtstatus 3 rtstatus VMOD
+$Function STRING rtstatus()
