@@ -8,16 +8,26 @@
 #include <math.h>
 #include "vrt.h"
 #include "vrt_obj.h"
-#include "cache/cache.h"
+
 #include "vcc_if.h"
-#include "cache/cache_backend.h"
 //#include "libvarnishapi.h"
-//#include "vapi/vsc.h"
+//#include "cache/cache.h"
+#include "vapi/vsc.h"
+
 #include "vapi/vsm.h"
 //#include "vtim.h"
 #include "vcl.h"
+//#include "cache/cache_backend.h"
 
-
+struct ws {
+	unsigned		magic;
+#define WS_MAGIC		0x35fac554
+	char			id[4];		/* identity */
+	char			*s;		/* (S)tart of buffer */
+	char			*f;		/* (F)ree/front pointer */
+	char			*r;		/* (R)eserved length */
+	char			*e;		/* (E)nd of buffer */
+};
 #define STRCAT(dst, src, ctx)					\
     do {							\
 	dst = wsstrncat(dst, src, ctx);				\
@@ -62,9 +72,9 @@ sprintf (tmp, "\t\"timestamp\": %f,\n", iter->time);
 STRCAT (iter->p, tmp, iter->cpy_ctx);
 STRCAT (iter->p, "\t\"timestamp\" : \"", iter->cpy_ctx);
 STRCAT (iter->p, iter->time_stamp, iter->cpy_ctx);
-STRCAT (iter->p, "\",\n\t\"varnish_version\" : \"", iter->cpy_ctx);
-STRCAT (iter->p, VCS_version, iter->cpy_ctx);
-STRCAT (iter->p, "\",\n", iter->cpy_ctx);
+//STRCAT (iter->p, "\",\n\t\"varnish_version\" : \"", iter->cpy_ctx);
+//STRCAT (iter->p, VCS_version, iter->cpy_ctx);
+//STRCAT (iter->p, "\",\n", iter->cpy_ctx);
 /*sprintf (tmp, "\t\"varnish_port\": %d,\n", VRT_r_server_hostname (iter->cpy_ctx));
   STRCAT (iter->p, tmp, iter->cpy_ctx);*/
 STRCAT (iter->p, "\t\"server_id\": \"", iter->cpy_ctx);
@@ -80,7 +90,7 @@ STRCAT (iter->p, "\",\n", iter->cpy_ctx);
 return (0);
 }
 //////////////////////////////////////////////////////////
-int
+/*int
 backend (struct iter_priv *iter)
 {
     int i;
@@ -107,19 +117,19 @@ backend (struct iter_priv *iter)
 	}
     STRCAT (iter->p, "],\n", iter->cpy_ctx);
     return (0);
-}
+    }*/
 ///////////////////////////////////////////////////////
 int
-rate (struct iter_priv *iter)
+rate (struct iter_priv *iter,struct VSM_data *vd )
 {
     double tv,dt;
     double  lt, lhit, hit, lmiss, miss, hr, mr, ratio, up;
     char tmp[128];
-    
+      const struct VSC_C_main *VSC_C_main;
     tv = VTIM_mono();
     dt = tv - lt;
     lt = tv;
-
+VSC_C_main = VSC_Main(vd,NULL);
     hit = VSC_C_main->cache_hit;
     miss = VSC_C_main->cache_miss;
     hr = (hit - lhit) / lt;
@@ -150,7 +160,7 @@ json_status (void *priv, const struct VSC_point *const pt)
 	return (0);
    
     val = *(const volatile uint64_t *)pt->ptr;
-    /*sec = pt->section;
+    sec = pt->section;
     
     if (iter->jp)
 	iter->jp = 0;
@@ -162,32 +172,32 @@ json_status (void *priv, const struct VSC_point *const pt)
 	    STRCAT (iter->p, sec->fantom->type, iter->cpy_ctx);
 	    STRCAT (iter->p, ".", iter->cpy_ctx);
 	}
-    /* if (strcmp (pt->ident, ""))
+    if (strcmp (sec->fantom->ident, ""))
 	{
-	    STRCAT (iter->p, pt->ident, iter->cpy_ctx);
+	    STRCAT (iter->p, sec->fantom->ident, iter->cpy_ctx);
 	    STRCAT (iter->p, ".", iter->cpy_ctx);
 	}
-    STRCAT (iter->p, pt->name, iter->cpy_ctx);
+    STRCAT (iter->p, pt->desc->name, iter->cpy_ctx);
     STRCAT (iter->p, "\": {", iter->cpy_ctx);
-    if (strcmp (pt->class, ""))
+    if (strcmp (sec->fantom->type, ""))
 	{
 	    STRCAT (iter->p, "\"type\": \"", iter->cpy_ctx);
-	    STRCAT (iter->p, pt->class, iter->cpy_ctx);
+	    STRCAT (iter->p, sec->fantom->type, iter->cpy_ctx);
 	    STRCAT (iter->p, "\", ", iter->cpy_ctx);
 	}
-    if (strcmp (pt->ident, ""))
+    if (strcmp (sec->fantom->ident, ""))
 	{
 	    STRCAT (iter->p, "\"ident\": \"", iter->cpy_ctx);
-	    STRCAT (iter->p, pt->ident, iter->cpy_ctx);
+	    STRCAT (iter->p, sec->fantom->ident, iter->cpy_ctx);
 	    STRCAT (iter->p, "\", ", iter->cpy_ctx);
 	}
     STRCAT (iter->p, "\"descr\": \"", iter->cpy_ctx);
-    STRCAT (iter->p, pt->desc, iter->cpy_ctx);
+    STRCAT (iter->p, pt->desc->sdesc, iter->cpy_ctx);
     STRCAT (iter->p, "\", ", iter->cpy_ctx);
     sprintf (tmp, "\"value\": %" PRIu64 "}", val);
     STRCAT (iter->p, tmp, iter->cpy_ctx);
     if (iter->jp)
-    STRCAT (iter->p, "\n", iter->cpy_ctx);*/
+    STRCAT (iter->p, "\n", iter->cpy_ctx);
     return (0);
     }
 ///////////////////////////////////////////////////////
@@ -195,13 +205,13 @@ int
 run_subroutine (struct iter_priv *iter, struct VSM_data *vd)
 {
     STRCAT (iter->p, "{\n", iter->cpy_ctx);
-    rate (iter);
+    rate (iter,vd);
     general_info (iter);
-    backend (iter);
+    //backend (iter);
     (void)VSC_Iter(vd, NULL, json_status, iter);
     STRCAT (iter->p, "\n}\n", iter->cpy_ctx);
     return (0);
-}
+    }
 ///////////////////////////////////////////////////////
 VCL_STRING
 vmod_rtstatus (const struct vrt_ctx *ctx)
@@ -209,10 +219,10 @@ vmod_rtstatus (const struct vrt_ctx *ctx)
     struct iter_priv iter = { 0 };
     struct tm t_time;
     struct VSM_data *vd;
-    struct VSM_fantom f_main = VSM_FANTOM_NULL;
+    // struct VSM_fantom f_main = VSM_FANTOM_NULL;
     const struct VSC_C_main *VSC_C_main;
     vd = VSM_New();
-    VSC_Setup(vd);
+    // VSC_Setup(vd);
     if (VSM_Open(vd)){
 	    //WSL (ctx->wrk, SLT_Error, sp->fd, "VSC can't be opened.");
 	    VSM_Delete (vd);
@@ -225,9 +235,9 @@ vmod_rtstatus (const struct vrt_ctx *ctx)
     *(iter.p) = 0;
     iter.cpy_ctx = ctx;
     VSC_C_main =  VSC_Main(vd,NULL);
-    //  run_subroutine (&iter,vd);
-  (void)VSC_Iter(vd, NULL, json_status, iter);
-    //VSM_Delete (vd);
+    run_subroutine (&iter,vd);
+   
+   VSM_Delete (vd);
     WS_Release (ctx->ws, strlen (iter.p) + 1);
     return (iter.p);
 }
