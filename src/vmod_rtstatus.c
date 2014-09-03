@@ -148,11 +148,13 @@ vmod_rtstatus (const struct vrt_ctx *ctx)
     iter.p = ctx->ws->f;
     *(iter.p) = 0;
     iter.cpy_ctx = ctx;
+	iter.jp = 1;
     VSC_C_main =  VSC_Main(vd,NULL);
 //rate(&iter,vd);
 
 run_subroutine (&iter,vd);
     ( void)VSC_Iter(vd, NULL, json_status, &iter);
+STRCAT(iter.p, "\n}\n",iter.cpy_ctx);
   
    VSM_Delete (vd);
     WS_Release (ctx->ws, strlen (iter.p) + 1);

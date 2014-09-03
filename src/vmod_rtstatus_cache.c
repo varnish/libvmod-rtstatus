@@ -103,7 +103,6 @@ run_subroutine (struct iter_priv *iter, struct VSM_data *vd)
      general_info (iter);
      backend (iter);
     
-    STRCAT (iter->p, "\n}\n", iter->cpy_ctx);
     return (0);
     }
 ////////////////////////////////////////////////////////
