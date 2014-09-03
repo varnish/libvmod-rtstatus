@@ -20,22 +20,6 @@ init_function (struct vmod_priv *priv, const struct VCL_conf *conf)
 return (0);
 }
 
-#define STRCAT(dst, src, ctx)					\
-    do {							\
-	dst = wsstrncat(dst, src, ctx);				\
-	if (!dst) {						\
-	    WS_Release(ctx->ws, 0);				\
-	    return 1;						\
-	}							\
-    } while(0)							\
-
-struct iter_priv{
-    char *p;
-    const struct vrt_ctx *cpy_ctx;
-    char *time_stamp;
-    struct vtc_job *jp;
-    double time;
-};
 
 
 
@@ -165,9 +149,11 @@ vmod_rtstatus (const struct vrt_ctx *ctx)
     *(iter.p) = 0;
     iter.cpy_ctx = ctx;
     VSC_C_main =  VSC_Main(vd,NULL);
-rate(&iter,vd);
-   (void)VSC_Iter(vd, NULL, json_status, &iter);
-  run_subroutine (&iter,vd);
+//rate(&iter,vd);
+
+run_subroutine (&iter,vd);
+    ( void)VSC_Iter(vd, NULL, json_status, &iter);
+  
    VSM_Delete (vd);
     WS_Release (ctx->ws, strlen (iter.p) + 1);
     return (iter.p);
