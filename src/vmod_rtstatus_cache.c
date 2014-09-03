@@ -66,19 +66,17 @@ int
 general_info (struct iter_priv *iter)
 {
 char tmp[128];
-/*STRCAT (iter->p, "\t\"req_request\": \"", iter->cpy_ctx);
-STRCAT (iter->p, VRT_r_req(iter->cpy_ctx), iter->cpy_ctx);
-STRCAT (iter->p, "\",\n", iter->cpy_ctx);*/
-//STRCAT (iter->p, VRT_r_obj_status (iter->cpy_ctx) , iter->cpy_ctx);
+
+
 sprintf (tmp, "\t\"timestamp\": %f,\n", iter->time);
 STRCAT (iter->p, tmp, iter->cpy_ctx);
 STRCAT (iter->p, "\t\"timestamp\" : \"", iter->cpy_ctx);
 STRCAT (iter->p, iter->time_stamp, iter->cpy_ctx);
-//STRCAT (iter->p, "\",\n\t\"varnish_version\" : \"", iter->cpy_ctx);
-//STRCAT (iter->p, VCS_version, iter->cpy_ctx);
-//STRCAT (iter->p, "\",\n", iter->cpy_ctx);
-/*sprintf (tmp, "\t\"varnish_port\": %d,\n", VRT_r_server_hostname (iter->cpy_ctx));
-  STRCAT (iter->p, tmp, iter->cpy_ctx);*/
+STRCAT (iter->p, "\",\n\t\"varnish_version\" : \"", iter->cpy_ctx);
+STRCAT (iter->p, VCS_version, iter->cpy_ctx);
+STRCAT (iter->p, "\",\n", iter->cpy_ctx);
+sprintf (tmp, "\t\"varnish_port\": %s,\n", VRT_r_server_hostname (iter->cpy_ctx));
+ STRCAT (iter->p, tmp, iter->cpy_ctx);
 STRCAT (iter->p, "\t\"server_id\": \"", iter->cpy_ctx);
 STRCAT (iter->p, VRT_r_server_identity (iter->cpy_ctx), iter->cpy_ctx);
 STRCAT (iter->p, "\",\n", iter->cpy_ctx);

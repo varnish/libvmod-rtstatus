@@ -4,7 +4,8 @@ struct iter_priv{
     char *p;
     const struct vrt_ctx *cpy_ctx;
     char *time_stamp;
-    struct vtc_job *jp;
+    //struct vtc_job *jp;
+	int jp;
     double time;
 };
 
