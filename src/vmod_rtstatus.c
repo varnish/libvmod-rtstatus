@@ -118,6 +118,7 @@ json_status(void *priv, const struct VSC_point *const pt)
 		STRCAT (iter->p, "\n", iter->cpy_ctx);
 	return (0);
 }
+#include "vsa.h"
 ///////////////////////////////////////////////////////
 VCL_STRING
 vmod_rtstatus(const struct vrt_ctx *ctx)
@@ -125,10 +126,10 @@ vmod_rtstatus(const struct vrt_ctx *ctx)
 	struct iter_priv iter = { 0 };
 	struct tm t_time;
 	struct VSM_data *vd;
-	// struct VSM_fantom f_main = VSM_FANTOM_NULL;
+
 	const struct VSC_C_main *VSC_C_main;
 	vd = VSM_New();
-	// VSC_Setup(vd);
+	
 	if (VSM_Open(vd)) {
 		//WSL (ctx->wrk, SLT_Error, sp->fd, "VSC can't be opened.");
 		VSM_Delete (vd);
@@ -142,7 +143,8 @@ vmod_rtstatus(const struct vrt_ctx *ctx)
 	iter.cpy_ctx = ctx;
 	iter.jp = 1;
 	VSC_C_main =  VSC_Main(vd,NULL);
-	//rate(&iter,vd);
+	
+	//	STRCAT(iter.p,VSA_Port(VRT_r_server_ip(iter.cpy_ctx)), iter.cpy_ctx);
 
 	run_subroutine(&iter,vd);
 	(void)VSC_Iter(vd, NULL, json_status, &iter);
