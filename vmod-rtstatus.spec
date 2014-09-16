@@ -7,7 +7,7 @@ Group: System Environment/Daemons
 Source0: libvmod-rtstatus.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: varnish > 3.0
-BuildRequires: make, python-docutils
+BuildRequires: make, python-docutils, varnish-libs
 
 %description
 rtstatus VMOD
