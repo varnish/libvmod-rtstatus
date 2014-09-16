@@ -65,6 +65,8 @@ if test "x$VMODDIR" = x; then
 	fi
 fi
 
+PKG_CHECK_MODULES([VARNISHAPI], [varnishapi])
+
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
