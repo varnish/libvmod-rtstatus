@@ -14,11 +14,9 @@
 #include "cache/cache.h"
 #include "vcl.h"
 #include "vas.h"
-//#include "cache/cache_busyobj.h"
 #include "cache/cache_backend.h"
 
 #include "vmod_rtstatus.h"
-
 static char *
 wsstrncat(char *dest, const char *src, const struct vrt_ctx *ctx)
 {
@@ -46,13 +44,13 @@ backend(struct iter_priv *iter)
 					healthy ? "healthy" : "sick");
 			assert(j >= 0);
 			STRCAT(iter->p, buf, iter->cpy_ctx);
-			if (i < (iter->cpy_ctx->vcl->ndirector - 2)) {
+			if (i < (iter->cpy_ctx->vcl->ndirector - 1)) {
 				STRCAT(iter->p, ",", iter->cpy_ctx);
 			}
 		
 		}
 	}
-	
+	//STRCAT(iter->p, VBE_UseHealth(iter->cpy_ctx->vcl->director[0]), iter->cpy_ctx);
 	STRCAT(iter->p, "],\n", iter->cpy_ctx);
 	return(0);
 }
@@ -64,17 +62,11 @@ general_info(struct iter_priv *iter)
 
 	sprintf(tmp, "\t\"timestamp\": %f,\n", iter->time);
 	STRCAT(iter->p, tmp, iter->cpy_ctx);
-
-	//sprintf(tmp, "\t\"varnish_port\": %s,\n", VRT_r_server_ip(iter->cpy_ctx));
-	//STRCAT(iter->p, tmp, iter->cpy_ctx);
-	//STRCAT(iter->p, "\t\"timestamp\" : \"", iter->cpy_ctx);
-	//STRCAT(iter->p, VRT_r_server_ip(iter->cpy_ctx), iter->cpy_ctx);
-
+	
 	STRCAT(iter->p, "\t\"varnish_version\" : \"", iter->cpy_ctx);
 	STRCAT(iter->p, VCS_version, iter->cpy_ctx);
 	STRCAT(iter->p, "\",\n", iter->cpy_ctx);
-	//	sprintf(tmp, "\t\"varnish_port\": %s,\n", VRT_r_server_hostname (iter->cpy_ctx));
-	//STRCAT(iter->p, tmp, iter->cpy_ctx);
+
 	STRCAT(iter->p, "\t\"server_id\": \"", iter->cpy_ctx);
 	STRCAT(iter->p, VRT_r_server_identity (iter->cpy_ctx), iter->cpy_ctx);
 	STRCAT(iter->p, "\",\n", iter->cpy_ctx);
@@ -85,13 +77,36 @@ general_info(struct iter_priv *iter)
 }
 ///////////////////////////////////////////////////////
 int
+vrt_backend( struct iter_priv *iter)
+{
+    char tmp[128];
+    sprintf(tmp, "\t\"Connection timeout\": %f,\n", iter->cpy_be->connect_timeout);
+    STRCAT(iter->p, tmp, iter->cpy_ctx);
+    sprintf(tmp, "\t\"max_connections\": %f,\n", iter->cpy_be->max_connections);
+    STRCAT(iter->p, tmp, iter->cpy_ctx);
+    STRCAT(iter->p, "\t\"backend property\" : \"", iter->cpy_ctx);
+    STRCAT(iter->p, iter->cpy_be->vcl_name, iter->cpy_ctx);
+    STRCAT(iter->p, "\",\n", iter->cpy_ctx);
+    STRCAT(iter->p, "\t\"ipv6\" : \"", iter->cpy_ctx);
+    STRCAT(iter->p, iter->cpy_be->ipv6_addr, iter->cpy_ctx);
+    STRCAT(iter->p, "\",\n", iter->cpy_ctx);
+    sprintf(tmp, "\t\"First_byte_to\": %f,\n", iter->cpy_be->first_byte_timeout);
+    STRCAT(iter->p, tmp, iter->cpy_ctx);
+    sprintf(tmp, "\t\"between_bytes_to\": %f,\n", iter->cpy_be->between_bytes_timeout);
+    STRCAT(iter->p, tmp, iter->cpy_ctx);
+    
+    return(0);
+}
+
+///////////////////////////////////////////////////////
+int
 run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
 {
-         STRCAT(iter->p, "{\n", iter->cpy_ctx);
+        STRCAT(iter->p, "{\n", iter->cpy_ctx);
 	rate(iter, vd);
 	general_info(iter);
 	backend(iter);
-
+	vrt_backend(iter);
 	return(0);
 }
 ////////////////////////////////////////////////////////

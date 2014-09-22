@@ -1,10 +1,8 @@
-
-
 struct iter_priv{
     char *p;
     const struct vrt_ctx *cpy_ctx;
     char *time_stamp;
-    //struct vtc_job *jp;
+    const struct vrt_backend *cpy_be;
 	int jp;
     double time;
 };
@@ -18,5 +16,11 @@ struct iter_priv{
 	    return 1;						\
 	}							\
     } while(0)							\
+
+
+
+
+
+
 
 
