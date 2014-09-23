@@ -3,9 +3,7 @@
 <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js">
-  location.href = "http://localhost/rtstaus";
-</script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
 <style type="text/css">
   .p { white-space: pre;}
   .backend { white-space: pre;}
@@ -22,13 +20,9 @@
 	$.getJSON( "/rtstatus.json", function( data ) {
 	var items = [];	
 	var index = 0;
-	items.push("<p>"+ data.req_request + " " + data.obj_status + "</p>");
-	items.push("<p>" + data.timestamp + "</p>");
 	items.push("<p>"+ "<b>Varnish version:</b> " + data.varnish_version + "," + "</p>");
-	items.push("<p>"+ "<b>Varnish port:</b> " + data.varnish_port + "," + "</p>");
 	items.push("<p>"+ "<b>Server identity:</b> " + data.server_id + "," + "</p>");
-	items.push("<p>" + "<b>Director name:</b>" + " " + data.director.name + "," + "</p>" );
-	items.push("<p>"+ "<b>VCL name:</b>"+ " " + data.director.vcl_name + "," + "</p>");
+	items.push("<p>"+ "<b>Client identity:</b> " + data.client_id + "," + "</p>");
 	items.push("<p>"+ "<b>Hitrate:</b>"+ " " + data.hitrate + "%"+ "</p>");
 	items.push("<p>"+ "<b>Load:</b>"+ " " + data.load + "req/s"+ "</p>");
 	$("div.info").html("");
@@ -41,6 +35,26 @@
 	info();
       </script>
     </div>
+    <h1>VRT backend</h1>
+    <div class="vrtbe">
+      <script type="text/javascript">
+	var myVar = setInterval(function(){vrtbe()}, 1000);
+	function vrtbe(){
+	$.getJSON( "/rtstatus.json", function( data ) {
+	var items = [];	
+	var index = 0;
+	items.push("<p>"+ "<b>Backend property:</b> " + data.backend_property + "," + "</p>");
+	items.push("<p>"+ "<b>ipv6:</b> " + data.ipv6 + "," + "</p>");
+	$("div.vrtbe").html("");
+	$( "<p/>", {
+	"class": "my-new-list",
+	html: items.join( "" )
+	}).appendTo( "div.vrtbe" );
+	})();
+	};
+	vrtbe();
+      </script>
+    </div>
     <h1>Backends</h1>
     <div class="backend">
       <script type="text/javascript">
@@ -49,23 +63,31 @@
 	$.getJSON( "/rtstatus.json", function( data ) {
 	var items = [];
 	var i;
+	var cont;
 	$.each( data, function( key, val ) {
 	if(key === "backend"){
 	var tmp = data.backend;
-	for(i = 0; i < tmp.length;i++){
-		       items.push( "<p>" + "<b>Name:</b> " + tmp[i].name + " : " + tmp[i].value + "," + "</p>" );
-		       }
-		       }
-		       });
-		       $("div.backend").html("")
-		       $( "<p/>", {
-		       "class": "my-new-list",
-		       html: items.join( "" )
-		       }).appendTo( "div.backend" );
-		       })();
-		       };
-		       backend();
-		       </script>
+	for(i = 0, cont = 0; i < tmp.length;i++){
+	items.push( "<p>" + "<b>Name:</b> " + tmp[i].name + " : " + tmp[i].value + "," + "</p>" );
+	
+	
+		  }
+		  }
+		 if( val.type === "VBE"){
+	if (cont< 9){
+		  items.push( "<p>" + val.descr + " : " + val.value  + "</p>" );
+		  cont++;
+		  }} 
+		  });
+		  $("div.backend").html("")
+		  $( "<p/>", {
+		  "class": "my-new-list",
+		  html: items.join( "" )
+		  }).appendTo( "div.backend" );
+		  })();
+		  };
+		  backend();
+		  </script>
     </div>
     <script>
       function openSpoiler(id){
@@ -85,9 +107,9 @@
 	  var i = 1;
 	  $.each( data, function( key, val ) {
 	  if(cont>12){
-	 	items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + "[" + val.descr + "]" + "</span><BR>" );
-	
-	 i++;
+	  items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + "[" + val.descr + "]" + "</span><BR>" );
+	  
+	  i++;
 	  }
 	  cont++;
 	  });
@@ -136,10 +158,8 @@
 	var i = 1;
 	$.each( data, function( key, val ) {
 	if(cont>12){
-
 	items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + val.value + "</span><BR>");
 	i++;
-
 	}
 	cont++;
 	});

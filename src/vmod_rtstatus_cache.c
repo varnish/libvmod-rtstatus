@@ -80,11 +80,11 @@ int
 vrt_backend( struct iter_priv *iter)
 {
     char tmp[128];
-    sprintf(tmp, "\t\"Connection timeout\": %f,\n", iter->cpy_be->connect_timeout);
+    sprintf(tmp, "\t\"Connection_timeout\": %f,\n", iter->cpy_be->connect_timeout);
     STRCAT(iter->p, tmp, iter->cpy_ctx);
     sprintf(tmp, "\t\"max_connections\": %f,\n", iter->cpy_be->max_connections);
     STRCAT(iter->p, tmp, iter->cpy_ctx);
-    STRCAT(iter->p, "\t\"backend property\" : \"", iter->cpy_ctx);
+    STRCAT(iter->p, "\t\"backend_property\" : \"", iter->cpy_ctx);
     STRCAT(iter->p, iter->cpy_be->vcl_name, iter->cpy_ctx);
     STRCAT(iter->p, "\",\n", iter->cpy_ctx);
     STRCAT(iter->p, "\t\"ipv6\" : \"", iter->cpy_ctx);
