@@ -39,18 +39,17 @@ backend(struct iter_priv *iter)
 			char buf[1024];
 			int j, healthy;
 			healthy = VDI_Healthy(iter->cpy_ctx->vcl->director[i]);
-			j = snprintf(buf, sizeof buf, "{\"name\":\"%s\", \"value\": \"%s\"}",
+			j = snprintf(buf, sizeof buf, "{\"director_name\" : \"%s\" , \"name\":\"%s\", \"value\": \"%s\"}",
+				        iter->cpy_ctx->vcl->director[i]->name,
 					iter->cpy_ctx->vcl->director[i]->vcl_name,
 					healthy ? "healthy" : "sick");
 			assert(j >= 0);
 			STRCAT(iter->p, buf, iter->cpy_ctx);
 			if (i < (iter->cpy_ctx->vcl->ndirector - 1)) {
-				STRCAT(iter->p, ",", iter->cpy_ctx);
+			    STRCAT(iter->p, ",\n\t\t", iter->cpy_ctx);
 			}
-		
 		}
 	}
-	//STRCAT(iter->p, VBE_UseHealth(iter->cpy_ctx->vcl->director[0]), iter->cpy_ctx);
 	STRCAT(iter->p, "],\n", iter->cpy_ctx);
 	return(0);
 }
@@ -59,14 +58,11 @@ int
 general_info(struct iter_priv *iter)
 {
 	char tmp[128];
-
 	sprintf(tmp, "\t\"timestamp\": %f,\n", iter->time);
 	STRCAT(iter->p, tmp, iter->cpy_ctx);
-	
 	STRCAT(iter->p, "\t\"varnish_version\" : \"", iter->cpy_ctx);
 	STRCAT(iter->p, VCS_version, iter->cpy_ctx);
 	STRCAT(iter->p, "\",\n", iter->cpy_ctx);
-
 	STRCAT(iter->p, "\t\"server_id\": \"", iter->cpy_ctx);
 	STRCAT(iter->p, VRT_r_server_identity (iter->cpy_ctx), iter->cpy_ctx);
 	STRCAT(iter->p, "\",\n", iter->cpy_ctx);
@@ -82,8 +78,8 @@ vrt_backend( struct iter_priv *iter)
     char tmp[128];
     sprintf(tmp, "\t\"Connection_timeout\": %f,\n", iter->cpy_be->connect_timeout);
     STRCAT(iter->p, tmp, iter->cpy_ctx);
-    sprintf(tmp, "\t\"max_connections\": %f,\n", iter->cpy_be->max_connections);
-    STRCAT(iter->p, tmp, iter->cpy_ctx);
+    /* sprintf(tmp, "\t\"max_connections\": %f,\n", iter->cpy_be->max_connections);
+       STRCAT(iter->p, tmp, iter->cpy_ctx);*/
     STRCAT(iter->p, "\t\"backend_property\" : \"", iter->cpy_ctx);
     STRCAT(iter->p, iter->cpy_be->vcl_name, iter->cpy_ctx);
     STRCAT(iter->p, "\",\n", iter->cpy_ctx);
@@ -94,7 +90,14 @@ vrt_backend( struct iter_priv *iter)
     STRCAT(iter->p, tmp, iter->cpy_ctx);
     sprintf(tmp, "\t\"between_bytes_to\": %f,\n", iter->cpy_be->between_bytes_timeout);
     STRCAT(iter->p, tmp, iter->cpy_ctx);
+
     
+	/*struct backend *bp;
+    bp = iter->cpy_be->backend;
+    
+    STRCAT(iter->p, "\t\"backend_property\" : \"", iter->cpy_ctx);
+    STRCAT(iter->p,iter->cpy_be->backend->port , iter->cpy_ctx);
+    STRCAT(iter->p, "\",\n", iter->cpy_ctx);*/
     return(0);
 }
 

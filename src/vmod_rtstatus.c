@@ -63,6 +63,8 @@ rate(struct iter_priv *iter,struct VSM_data *vd )
 	else ratio = 0;
 
 	up = VSC_C_main->uptime;
+	sprintf(tmp, "\t\"uptime\" : %.0f,\n", up);
+	STRCAT(iter->p, tmp, iter->cpy_ctx);
 	sprintf (tmp, "\t\"hitrate\": %.2f,\n", ratio);
 	STRCAT (iter->p, tmp, iter->cpy_ctx);
 	sprintf (tmp, "\t\"load\": %.0f,\n", (VSC_C_main->client_req / up));
@@ -120,7 +122,7 @@ json_status(void *priv, const struct VSC_point *const pt)
 }
 ///////////////////////////////////////////////////////
 VCL_STRING
-vmod_rtstatus(const struct vrt_ctx *ctx, const struct vbc *be)
+vmod_rtstatus(const struct vrt_ctx *ctx, const struct vrt_backend *be)
 {
 	struct iter_priv iter = { 0 };
 	struct tm t_time;
@@ -142,7 +144,7 @@ vmod_rtstatus(const struct vrt_ctx *ctx, const struct vbc *be)
 	iter.cpy_be = be;
 	iter.jp = 1;
 	VSC_C_main =  VSC_Main(vd,NULL);
-	
+
 	run_subroutine(&iter,vd);
 	(void)VSC_Iter(vd, NULL, json_status, &iter);
 	STRCAT(iter.p, "\n}\n",iter.cpy_ctx);
