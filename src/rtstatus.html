@@ -23,6 +23,7 @@
 	items.push("<p>"+ "<b>Varnish version:</b> " + data.varnish_version + "," + "</p>");
 	items.push("<p>"+ "<b>Server identity:</b> " + data.server_id + "," + "</p>");
 	items.push("<p>"+ "<b>Client identity:</b> " + data.client_id + "," + "</p>");
+	items.push("<p>"+ "<b>Varnish Uptime:</b> " + data.uptime + "s" + "</p>");
 	items.push("<p>"+ "<b>Hitrate:</b>"+ " " + data.hitrate + "%"+ "</p>");
 	items.push("<p>"+ "<b>Load:</b>"+ " " + data.load + "req/s"+ "</p>");
 	$("div.info").html("");
@@ -55,6 +56,29 @@
 	vrtbe();
       </script>
     </div>
+
+    <div class="be">
+       <script type="text/javascript">
+	$.getJSON( "/rtstatus.json", function( data ) {
+	var items = [];
+	var cont = 0;
+	var i = 1;
+	$.each( data, function( key, val ) {
+	if( val.type === "MAIN" && key.contains('backend')){
+
+	items.push( "<p>" + "<b>" + val.descr + "</b>"  +" : "+  val.value + "</p>" );
+	
+	} 
+	});
+	$("div.be").html("")
+	$( "<h6/>", {
+	"class": "my-new-list",
+	html: items.join( "" )
+	}).appendTo( "div.be" );
+	})();
+      </script>
+    </div>
+
     <h1>Backends</h1>
     <div class="backend">
       <script type="text/javascript">
@@ -62,33 +86,67 @@
 	function backend(){
 	$.getJSON( "/rtstatus.json", function( data ) {
 	var items = [];
-	var i;
+	var i,j;
 	var cont;
 	$.each( data, function( key, val ) {
 	if(key === "backend"){
 	var tmp = data.backend;
+	}
+	if(tmp) {
 	for(i = 0, cont = 0; i < tmp.length;i++){
-	items.push( "<p>" + "<b>Name:</b> " + tmp[i].name + " : " + tmp[i].value + "," + "</p>" );
-	
-	
-		  }
-		  }
-		 if( val.type === "VBE"){
-	if (cont< 9){
-		  items.push( "<p>" + val.descr + " : " + val.value  + "</p>" );
-		  cont++;
-		  }} 
-		  });
-		  $("div.backend").html("")
-		  $( "<p/>", {
-		  "class": "my-new-list",
-		  html: items.join( "" )
-		  }).appendTo( "div.backend" );
-		  })();
-		  };
-		  backend();
-		  </script>
+				 items.push( "<p>" + "<b>Name:</b> " + tmp[i].name + " : " + tmp[i].value + "," + "</p>" );
+				 
+				 }
+				 }
+				 });
+				 $("div.backend").html("")
+				 $( "<p/>", {
+				 "class": "my-new-list",
+				 html: items.join( "" )
+				 }).appendTo( "div.backend" );
+				 })();
+				 };
+				 backend();
+</script>       
     </div>
+   
+
+    <script>
+      function openSpoiler(id){
+      var a = document.getElementById(id).style;
+      a.display = a.display=='block'?'none':'block'}
+    </script>
+    <a href="javascript:openSpoiler('spoilbe')">
+      <b>Show details backends</b></a>
+    <div id="spoilbe" class="row" style="display: none;">
+      <div class="col-xs-5">
+	<h2>Details:</h2>
+	<p4>details</p4>
+	<script type="text/javascript">
+	  $.getJSON( "/rtstatus.json", function( data ) {
+	  var items = [];
+	  var cont = 0;
+	  var i = 1;
+	  $.each( data, function( key, val ) {
+	  if( val.type === "VBE"){
+	  if(cont % 9 === 0){
+	  items.push( "\n" + "BACKEND : " + "<b>" + val.ident + "</b>" );
+	  }
+	  items.push( "<h6>" + val.descr + " : " + val.value  + "</h6>" );
+	  cont++;
+	  } 
+	  });
+	  $("p4").html("")
+	  $( "<h6/>", {
+	  "class": "my-new-list",
+	  html: items.join( "" )
+	  }).appendTo( "p4" );
+	  })();
+	</script>
+      </div>
+  </div>
+<BR>
+
     <script>
       function openSpoiler(id){
       var a = document.getElementById(id).style;
@@ -97,7 +155,7 @@
     <a href="javascript:openSpoiler('spoil')">
       <b>Show detailed counters</b></a>
     <div id="spoil" class="row" style="display: none;">
-      <div class="col-xs-4">
+      <div class="col-xs-5">
 	<h2>Description:</h2>
 	<p1>short description</p1>
 	<script type="text/javascript">
@@ -106,7 +164,7 @@
 	  var cont = 0;
 	  var i = 1;
 	  $.each( data, function( key, val ) {
-	  if(cont>12){
+	  if(cont>11){
 	  items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + "[" + val.descr + "]" + "</span><BR>" );
 	  
 	  i++;
@@ -130,7 +188,7 @@
 	var cont = 0;
 	var i = 1;
 	$.each( data, function( key, val ) {
-	if(cont>12){
+	if(cont>11){
 
 	items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + "[" + key + "]" + "</span><BR>" );
 	i++;
@@ -157,7 +215,7 @@
 	var cont = 0;
 	var i = 1;
 	$.each( data, function( key, val ) {
-	if(cont>12){
+	if(cont>11){
 	items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + val.value + "</span><BR>");
 	i++;
 	}
