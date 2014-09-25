@@ -69,6 +69,10 @@ general_info(struct iter_priv *iter)
 	STRCAT(iter->p, "\t\"client_id\": \"", iter->cpy_ctx);
 	STRCAT(iter->p, VRT_r_client_identity (iter->cpy_ctx), iter->cpy_ctx);
 	STRCAT(iter->p, "\",\n", iter->cpy_ctx);
+
+	sprintf(tmp, "\t\"PROVA\": %f,\n",  VRT_r_server_ip(iter->cpy_ctx));
+	STRCAT(iter->p, tmp, iter->cpy_ctx);
+
 	return(0);
 }
 ///////////////////////////////////////////////////////
@@ -76,28 +80,26 @@ int
 vrt_backend( struct iter_priv *iter)
 {
     char tmp[128];
-    sprintf(tmp, "\t\"Connection_timeout\": %f,\n", iter->cpy_be->connect_timeout);
-    STRCAT(iter->p, tmp, iter->cpy_ctx);
-    /* sprintf(tmp, "\t\"max_connections\": %f,\n", iter->cpy_be->max_connections);
-       STRCAT(iter->p, tmp, iter->cpy_ctx);*/
     STRCAT(iter->p, "\t\"backend_property\" : \"", iter->cpy_ctx);
     STRCAT(iter->p, iter->cpy_be->vcl_name, iter->cpy_ctx);
     STRCAT(iter->p, "\",\n", iter->cpy_ctx);
-    STRCAT(iter->p, "\t\"ipv6\" : \"", iter->cpy_ctx);
-    STRCAT(iter->p, iter->cpy_be->ipv6_addr, iter->cpy_ctx);
-    STRCAT(iter->p, "\",\n", iter->cpy_ctx);
+    if( iter->cpy_be->ipv6_addr!=NULL){
+	STRCAT(iter->p, "\t\"ipv6\" : \"", iter->cpy_ctx);
+	STRCAT(iter->p, iter->cpy_be->ipv6_addr, iter->cpy_ctx);
+	STRCAT(iter->p, "\",\n", iter->cpy_ctx);
+    };
+    sprintf(tmp, "\t\"Connection_timeout\": %f,\n", iter->cpy_be->connect_timeout);
+    STRCAT(iter->p, tmp, iter->cpy_ctx);
     sprintf(tmp, "\t\"First_byte_to\": %f,\n", iter->cpy_be->first_byte_timeout);
     STRCAT(iter->p, tmp, iter->cpy_ctx);
     sprintf(tmp, "\t\"between_bytes_to\": %f,\n", iter->cpy_be->between_bytes_timeout);
     STRCAT(iter->p, tmp, iter->cpy_ctx);
+    sprintf(tmp, "\t\"max_connections\": %u,\n", iter->cpy_be->max_connections);
+    STRCAT(iter->p, tmp, iter->cpy_ctx);
 
+   
     
-	/*struct backend *bp;
-    bp = iter->cpy_be->backend;
-    
-    STRCAT(iter->p, "\t\"backend_property\" : \"", iter->cpy_ctx);
-    STRCAT(iter->p,iter->cpy_be->backend->port , iter->cpy_ctx);
-    STRCAT(iter->p, "\",\n", iter->cpy_ctx);*/
+
     return(0);
 }
 

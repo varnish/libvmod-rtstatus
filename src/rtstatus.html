@@ -44,8 +44,8 @@
 	$.getJSON( "/rtstatus.json", function( data ) {
 	var items = [];	
 	var index = 0;
-	items.push("<p>"+ "<b>Backend property:</b> " + data.backend_property + "," + "</p>");
-	items.push("<p>"+ "<b>ipv6:</b> " + data.ipv6 + "," + "</p>");
+	items.push("<p>"+ "<b>Backend property:</b> " + data.backend_property + "</p>");
+	items.push("<p>"+ "<b>ipv6:</b> " + data.ipv6 + "</p>");
 	$("div.vrtbe").html("");
 	$( "<p/>", {
 	"class": "my-new-list",
@@ -71,7 +71,7 @@
 	} 
 	});
 	$("div.be").html("")
-	$( "<h6/>", {
+	$( "<p/>", {
 	"class": "my-new-list",
 	html: items.join( "" )
 	}).appendTo( "div.be" );
@@ -164,7 +164,7 @@
 	  var cont = 0;
 	  var i = 1;
 	  $.each( data, function( key, val ) {
-	  if(cont>11){
+	  if(cont>12){
 	  items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + "[" + val.descr + "]" + "</span><BR>" );
 	  
 	  i++;
@@ -188,7 +188,7 @@
 	var cont = 0;
 	var i = 1;
 	$.each( data, function( key, val ) {
-	if(cont>11){
+	if(cont>12){
 
 	items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + "[" + key + "]" + "</span><BR>" );
 	i++;
@@ -215,7 +215,7 @@
 	var cont = 0;
 	var i = 1;
 	$.each( data, function( key, val ) {
-	if(cont>11){
+	if(cont>12){
 	items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + val.value + "</span><BR>");
 	i++;
 	}
