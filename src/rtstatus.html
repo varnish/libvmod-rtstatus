@@ -47,11 +47,8 @@
 	var i = 1;
 	$.each( data, function( key, val ) {
 	if( val.type === "MAIN" && key.contains('backend')){
-
 	items.push( "<p>" + "<b>" + val.descr + "</b>"  +" : "+  val.value + "</p>" );
-	
-	} 
-	});
+	}});
 	$("div.be").html("")
 	$( "<p/>", {
 	"class": "my-new-list",
@@ -60,7 +57,6 @@
 	})();
       </script>
     </div>
-
     <h1>Backends</h1>
     <div class="backend">
       <script type="text/javascript">
@@ -76,23 +72,18 @@
 	}
 	if(tmp) {
 	for(i = 0, cont = 0; i < tmp.length;i++){
-				 items.push( "<p>" + "<b>Name:</b> " + tmp[i].name + " : " + tmp[i].value + "," + "</p>" );
-				 
-				 }
-				 }
-				 });
-				 $("div.backend").html("")
-				 $( "<p/>", {
-				 "class": "my-new-list",
-				 html: items.join( "" )
-				 }).appendTo( "div.backend" );
-				 })();
-				 };
-				 backend();
-</script>       
+	items.push( "<p>" + "<b>Name:</b> " + tmp[i].name + " : " + tmp[i].value + "," + "</p>" );
+	}}});
+	$("div.backend").html("")
+	$( "<p/>", {
+	"class": "my-new-list",
+	html: items.join( "" )
+	}).appendTo( "div.backend" );
+	})();
+	};
+	backend();
+      </script>       
     </div>
-   
-
     <script>
       function openSpoiler(id){
       var a = document.getElementById(id).style;
@@ -128,7 +119,6 @@
       </div>
   </div>
 <BR>
-
     <script>
       function openSpoiler(id){
       var a = document.getElementById(id).style;
@@ -148,7 +138,6 @@
 	  $.each( data, function( key, val ) {
 	  if(cont>7){
 	  items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + "[" + val.descr + "]" + "</span><BR>" );
-	  
 	  i++;
 	  }
 	  cont++;
@@ -171,10 +160,8 @@
 	var i = 1;
 	$.each( data, function( key, val ) {
 	if(cont>7){
-
 	items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + "[" + key + "]" + "</span><BR>" );
 	i++;
-
 	}
 	cont++;
 	});
