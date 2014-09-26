@@ -11,12 +11,6 @@
 #include "vapi/vsm.h"
 #include "vmod_rtstatus.h"
 
-int
-init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
-{
-	return(0);
-}
-
 struct ws {
 	unsigned		magic;
 #define WS_MAGIC		0x35fac554
@@ -26,6 +20,13 @@ struct ws {
 	char			*r;		/* (R)eserved length */
 	char			*e;		/* (E)nd of buffer */
 };
+
+
+int
+init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
+{
+	return(0);
+}
 ///////////////////////////////////////////////////////
 int
 rate(struct iter_priv *iter,struct VSM_data *vd )
