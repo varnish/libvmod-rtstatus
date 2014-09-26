@@ -36,26 +36,8 @@
 	info();
       </script>
     </div>
-    <h1>VRT backend</h1>
-    <div class="vrtbe">
-      <script type="text/javascript">
-	var myVar = setInterval(function(){vrtbe()}, 1000);
-	function vrtbe(){
-	$.getJSON( "/rtstatus.json", function( data ) {
-	var items = [];	
-	var index = 0;
-	items.push("<p>"+ "<b>Backend property:</b> " + data.backend_property + "</p>");
-	items.push("<p>"+ "<b>ipv6:</b> " + data.ipv6 + "</p>");
-	$("div.vrtbe").html("");
-	$( "<p/>", {
-	"class": "my-new-list",
-	html: items.join( "" )
-	}).appendTo( "div.vrtbe" );
-	})();
-	};
-	vrtbe();
-      </script>
-    </div>
+    <h1>Backends overview</h1>
+    
 
     <div class="be">
        <script type="text/javascript">
@@ -129,7 +111,7 @@
 	  var i = 1;
 	  $.each( data, function( key, val ) {
 	  if( val.type === "VBE"){
-	  if(cont % 9 === 0){
+	  if(cont % 11 === 0){
 	  items.push( "\n" + "BACKEND : " + "<b>" + val.ident + "</b>" );
 	  }
 	  items.push( "<h6>" + val.descr + " : " + val.value  + "</h6>" );
@@ -164,7 +146,7 @@
 	  var cont = 0;
 	  var i = 1;
 	  $.each( data, function( key, val ) {
-	  if(cont>12){
+	  if(cont>7){
 	  items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + "[" + val.descr + "]" + "</span><BR>" );
 	  
 	  i++;
@@ -188,7 +170,7 @@
 	var cont = 0;
 	var i = 1;
 	$.each( data, function( key, val ) {
-	if(cont>12){
+	if(cont>7){
 
 	items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + "[" + key + "]" + "</span><BR>" );
 	i++;
@@ -215,7 +197,7 @@
 	var cont = 0;
 	var i = 1;
 	$.each( data, function( key, val ) {
-	if(cont>12){
+	if(cont>7){
 	items.push( "<span>" + "<sub>"+ i + ". " + "</sub>" + val.value + "</span><BR>");
 	i++;
 	}

@@ -1,13 +1,10 @@
-#include "config.h"
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
-#include <unistd.h>
-#include <math.h>
+#include <sys/time.h>
 
-#include "miniobj.h"
 #include "vrt.h"
 #include "vrt_obj.h"
 #include "vapi/vsc.h"
@@ -29,15 +26,7 @@ struct ws {
 	char			*r;		/* (R)eserved length */
 	char			*e;		/* (E)nd of buffer */
 };
-//////////////////////////////////////////////////////////
-static char *
-wsstrncat(char *dest, const char *src, const struct vrt_ctx *ctx)
-{
-	if (ctx->ws->r <= ctx->ws->f) {
-		return (NULL);
-	}
-	return strcat(dest, src);
-	}
+
 ///////////////////////////////////////////////////////
 int
 rate(struct iter_priv *iter,struct VSM_data *vd )
@@ -120,9 +109,24 @@ json_status(void *priv, const struct VSC_point *const pt)
 		STRCAT (iter->p, "\n", iter->cpy_ctx);
 	return (0);
 }
+
+
+
+////////////////////////////////////////////////////////
+int
+run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
+{
+        STRCAT(iter->p, "{\n", iter->cpy_ctx);
+	rate(iter, vd);
+	general_info(iter);
+	backend(iter);
+	return(0);
+}
+
+
 ///////////////////////////////////////////////////////
 VCL_STRING
-vmod_rtstatus(const struct vrt_ctx *ctx, const struct vrt_backend *be)
+vmod_rtstatus(const struct vrt_ctx *ctx)
 {
 	struct iter_priv iter = { 0 };
 	struct tm t_time;
@@ -136,12 +140,11 @@ vmod_rtstatus(const struct vrt_ctx *ctx, const struct vrt_backend *be)
 	    VSM_Delete (vd);
 	    return "";
 	}
-	iter.time_stamp = VRT_TIME_string (ctx, iter.time);
 	WS_Reserve (ctx->ws, 0);
 	iter.p = ctx->ws->f;
 	*(iter.p) = 0;
 	iter.cpy_ctx = ctx;
-	iter.cpy_be = be;
+
 	iter.jp = 1;
 	VSC_C_main =  VSC_Main(vd,NULL);
 

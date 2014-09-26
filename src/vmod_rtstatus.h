@@ -1,11 +1,11 @@
 struct iter_priv{
     char *p;
     const struct vrt_ctx *cpy_ctx;
-    char *time_stamp;
-    const struct vrt_backend *cpy_be;
-	int jp;
-    double time;
+   	int jp;
+   // double time;
 };
+
+
 
 
 #define STRCAT(dst, src, ctx)					\
@@ -18,9 +18,6 @@ struct iter_priv{
     } while(0)							\
 
 
-
-
-
-
-
+/////////////////////////////////////////////////////////
+char *wsstrncat(char *dest, const char *src, const struct vrt_ctx *ctx);
 
