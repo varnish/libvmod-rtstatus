@@ -117,6 +117,8 @@ run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
 	rate(iter, vd);
 	general_info(iter);
 	backend(iter);
+	(void)VSC_Iter(vd, NULL, json_status, iter);
+	STRCAT(iter->p, "\n}\n", iter->cpy_ctx);
 	return(0);
 }
 ///////////////////////////////////////////////////////
@@ -144,8 +146,6 @@ vmod_rtstatus(const struct vrt_ctx *ctx)
 	VSC_C_main = VSC_Main(vd, NULL);
 
 	run_subroutine(&iter, vd);
-	(void)VSC_Iter(vd, NULL, json_status, &iter);
-	STRCAT(iter.p, "\n}\n", iter.cpy_ctx);
 
 	VSM_Delete(vd);
 	WS_Release(ctx->ws, strlen(iter.p) + 1);

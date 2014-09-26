@@ -8,15 +8,15 @@
 #include "vcl.h"
 #include "cache/cache_backend.h"
 #include "vmod_rtstatus.h"
-
+//////////////////////////////////////////////////////////
 char *
 wsstrncat(char *dest, const char *src, const struct vrt_ctx *ctx)
 {
 	if (ctx->ws->r <= ctx->ws->f) {
-		return(NULL);
+		return (NULL);
 	}
 	return strcat(dest, src);
-}
+	}
 //////////////////////////////////////////////////////////
 int
 backend(struct iter_priv *iter)

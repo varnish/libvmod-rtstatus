@@ -1,5 +1,3 @@
-char *wsstrncat(char *dest, const char *src, const struct vrt_ctx *ctx);
-
 struct iter_priv{
 	char *p;
 	const struct vrt_ctx *cpy_ctx;
@@ -15,4 +13,8 @@ struct iter_priv{
 			}					\
 	} while(0)						\
 
-
+void WS_Release(struct ws *ws, unsigned bytes);
+unsigned WS_Reserve(struct ws *ws, unsigned bytes);
+char *wsstrncat(char *dest, const char *src, const struct vrt_ctx *ctx);
+int general_info(struct iter_priv *iter);
+int backend(struct iter_priv *iter);
