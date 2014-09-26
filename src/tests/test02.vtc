@@ -1,33 +1,35 @@
 varnishtest "Test rtstatus servers"
 
 server s1 {
-       rxreq
-       txresp
+	rxreq
+	txresp
 } -start
 
 server s2 {
-       rxreq
-       txresp
+	rxreq
+	txresp
 } -start
 
 varnish v1 -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
-	
-	director foo random {
-		{ .backend = s1; .weight = 1; }
-		{ .backend = s2; .weight = 1; }
+	import directors;
+
+	sub vcl_init {
+		new bar = directors.round_robin();
+		bar.add_backend(s1);
+		bar.add_backend(s2);
 	}
 
 	sub vcl_recv {
 		if( req.url ~ "/rtstatus") {
-			set req.backend = foo;
-			error 200 "OK";
+			set req.backend_hint = bar.backend();
+			return(synth(200, "OK"));
 		}
 	}
-	sub vcl_error {
-		if(obj.status == 200) {
-			synthetic rtstatus.rtstatus();
-			return (deliver);
+	sub vcl_synth {
+		if( resp.status == 200) {
+			synthetic(rtstatus.rtstatus());
+			return(deliver);
 		}
 	}
 } -start

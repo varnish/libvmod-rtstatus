@@ -1,34 +1,33 @@
 varnishtest "Test rtstatus not proper url"
 
 server s1 {
-       rxreq
-       txresp
+	rxreq
+	txresp
 } -start
 
 varnish v1 -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
 
 	sub vcl_recv {
-		if(req.url ~ "/rtstatus") {
-			error 800 "OK";
+		if( req.url ~ "/rtstatus") {
+			return(synth(200, "OK"));
 		}
-		if(req.url !~ "/rtstatus") {
-			error 503;
+		if( req.url !~ "/rtstatus") {
+			return(synth(503, "KO"));
 		}
 	}
-	sub vcl_error {
-		if( obj.status == 800){
-			synthetic rtstatus.rtstatus();
-			set obj.status = 200;
-		return (deliver);
+	sub vcl_synth {
+		if( resp.status == 200) {
+			synthetic(rtstatus.rtstatus());
+			return (deliver);
 		}	
 	}
 } -start
 
 client c1 {
-       txreq -url "/rtstati"
-       rxresp
-       expect resp.status == 503
+	txreq -url "/rtstati"
+	rxresp
+	expect resp.status == 503
 }
 client c1 -run
 
