@@ -8,22 +8,22 @@
 #include "vcl.h"
 #include "cache/cache_backend.h"
 #include "vmod_rtstatus.h"
-//////////////////////////////////////////////////////////
+
 char *
 wsstrncat(char *dest, const char *src, const struct vrt_ctx *ctx)
 {
 	if (ctx->ws->r <= ctx->ws->f) {
-		return (NULL);
+		return(NULL);
 	}
 	return strcat(dest, src);
-	}
+}
 //////////////////////////////////////////////////////////
 int
 backend(struct iter_priv *iter)
 {
 	int i;
 	int cont = 1;
-	
+
 	STRCAT(iter->p, "\t\"backend\": [", iter->cpy_ctx);
 	for (i = 1; i < iter->cpy_ctx->vcl->ndirector; ++i) {
 		CHECK_OBJ_NOTNULL(iter->cpy_ctx->vcl->director[i], DIRECTOR_MAGIC);
@@ -49,7 +49,7 @@ backend(struct iter_priv *iter)
 int
 general_info(struct iter_priv *iter)
 {
-    STRCAT(iter->p, "\t\"varnish_version\" : \"", iter->cpy_ctx);
+	STRCAT(iter->p, "\t\"varnish_version\" : \"", iter->cpy_ctx);
 	STRCAT(iter->p, VCS_version, iter->cpy_ctx);
 	STRCAT(iter->p, "\",\n", iter->cpy_ctx);
 	STRCAT(iter->p, "\t\"server_id\": \"", iter->cpy_ctx);
