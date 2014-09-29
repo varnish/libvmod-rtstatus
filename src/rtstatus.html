@@ -5,14 +5,19 @@
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
 <style type="text/css">
-  .p { white-space: pre;}
+  .info { white-space: pre;}
   .backend { white-space: pre;}
-  .col-xs-12 {padding-top: 20%;}
+  .be { white-space: pre;}
+  .spoilbe { white-space: pre;}
+  .col-xs-12 {padding-top: 5%;}
+  footer {color: #666; background: #222;}
 </style>
 </head>
 <body>
+<header>
   <h1><b>VARNISH STATUS</b></h1>
-  <div class="container" style="float:left;text-align:left;padding-top:2%;">
+</header> 
+  <div class="container" style="float:left;text-align:left;">
     <div class="info" >
       <script type="text/javascript">
 	var myVar = setInterval(function(){info()}, 1000);
@@ -20,12 +25,12 @@
 	$.getJSON( "/rtstatus.json", function( data ) {
 	var items = [];	
 	var index = 0;
-	items.push("<p>"+ "<b>Varnish version:</b> " + data.varnish_version + "," + "</p>");
-	items.push("<p>"+ "<b>Server identity:</b> " + data.server_id + "," + "</p>");
-	items.push("<p>"+ "<b>Client identity:</b> " + data.client_id + "," + "</p>");
-	items.push("<p>"+ "<b>Varnish Uptime:</b> " + data.uptime + "s" + "</p>");
-	items.push("<p>"+ "<b>Hitrate:</b>"+ " " + data.hitrate + "%"+ "</p>");
-	items.push("<p>"+ "<b>Load:</b>"+ " " + data.load + "req/s"+ "</p>");
+	items.push("<p>"+ "<b>Varnish version: </b> " + data.varnish_version + "," + "</p>");
+	items.push("<p>"+ "<b>Server identity: </b> " + data.server_id + "," + "</p>");
+	items.push("<p>"+ "<b>Client identity: </b> " + data.client_id + "," + "</p>");
+	items.push("<p>"+ "<b>Varnish Uptime: </b> " + data.uptime + " s" + "</p>");
+	items.push("<p>"+ "<b>Hitrate: </b>"+ " " + data.hitrate + " %"+ "</p>");
+	items.push("<p>"+ "<b>Load: </b>"+ " " + data.load + " req/s"+ "</p>");
 	$("div.info").html("");
 	$( "<p/>", {
 	"class": "my-new-list",
@@ -37,17 +42,15 @@
       </script>
     </div>
     <h1>Backends overview</h1>
-    
-
     <div class="be">
-       <script type="text/javascript">
+      <script type="text/javascript">
 	$.getJSON( "/rtstatus.json", function( data ) {
 	var items = [];
 	var cont = 0;
 	var i = 1;
 	$.each( data, function( key, val ) {
 	if( val.type === "MAIN" && key.contains('backend')){
-	items.push( "<p>" + "<b>" + val.descr + "</b>"  +" : "+  val.value + "</p>" );
+	items.push( "<p>" + "<b>" + val.descr + "</b>"  +" :  "+  val.value + "</p>" );
 	}});
 	$("div.be").html("")
 	$( "<p/>", {
@@ -72,7 +75,7 @@
 	}
 	if(tmp) {
 	for(i = 0, cont = 0; i < tmp.length;i++){
-	items.push( "<p>" + "<b>Name:</b> " + tmp[i].name + " : " + tmp[i].value + "," + "</p>" );
+	items.push( "<p>" + "<b>Name: </b> " + tmp[i].name + " : " + tmp[i].value + "," + "</p>" );
 	}}});
 	$("div.backend").html("")
 	$( "<p/>", {
@@ -89,6 +92,7 @@
       var a = document.getElementById(id).style;
       a.display = a.display=='block'?'none':'block'}
     </script>
+    <BR>
     <a href="javascript:openSpoiler('spoilbe')">
       <b>Show details backends</b></a>
     <div id="spoilbe" class="row" style="display: none;">
@@ -103,14 +107,14 @@
 	  $.each( data, function( key, val ) {
 	  if( val.type === "VBE"){
 	  if(cont % 11 === 0){
-	  items.push( "\n" + "BACKEND : " + "<b>" + val.ident + "</b>" );
+	  items.push("BACKEND :  " + "<b>" + val.ident + "</b><BR>" );
 	  }
-	  items.push( "<h6>" + val.descr + " : " + val.value  + "</h6>" );
+	  items.push( "<span>" + val.descr + " : " + val.value  + "</span><BR>" );
 	  cont++;
 	  } 
 	  });
 	  $("p4").html("")
-	  $( "<h6/>", {
+	  $( "<ul/>", {
 	  "class": "my-new-list",
 	  html: items.join( "" )
 	  }).appendTo( "p4" );
@@ -206,7 +210,7 @@
 <div class="row">
   <div class="col-xs-12">
     <footer>
-      <a href="/rtstatus.json" target="_blank">Complete JSON file</a><br />
+      <a href="/rtstatus.json" target="_blank">Complete JSON file</a><br/>
       <a href="https://github.com/arianna-aondio/libvmod-rtstatus" target="_blank">Github repository</a><br /><br /><br />
       <p>&copy;Copyright 2014 Varnish Software AS</p>
     </footer>
