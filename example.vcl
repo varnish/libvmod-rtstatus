@@ -25,7 +25,7 @@ sub vcl_init {
 
 sub vcl_recv {
 	if (req.url ~ "/rtstatus.json") {
-		return(synth(200, "OK"));
+		return(synth(700, "OK"));
 	}
 	if (req.url ~ "/rtstatus") {
 		return(synth(800, "OK"));
@@ -33,11 +33,12 @@ sub vcl_recv {
 }
 
 sub vcl_synth {
-	if(resp.status == 200) {
+	if (resp.status == 700) {
+		set resp.status = 200;
 		synthetic(rtstatus.rtstatus());
 		return (deliver);
 	}
-	if(resp.status == 800) {
+	if (resp.status == 800) {
 		set resp.http.Content-Type = "text/html; charset=utf-8";
 		synthetic(std.fileread("/home/arianna/libvmod-rtstatus/src/rtstatus.html"));
 		return (deliver);
