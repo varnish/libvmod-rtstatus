@@ -31,19 +31,15 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 int
 rate(struct iter_priv *iter,struct VSM_data *vd )
 {
-	struct timeval tv;
-	double  lt, tt, lhit, hit, lmiss, miss, hr, mr, ratio, up;
+	double lhit, hit, lmiss, miss, hr, mr, ratio, up;
 	char tmp[128];
 	const struct VSC_C_main *VSC_C_main;
 
-	gettimeofday(&tv, NULL);
-	tt = tv.tv_usec * 1e-6 + tv.tv_sec;
-	lt = tt - lt;
 	VSC_C_main = VSC_Main(vd,NULL);
 	hit = VSC_C_main->cache_hit;
 	miss = VSC_C_main->cache_miss;
-	hr = (hit - lhit) / lt;
-	mr = (miss - lmiss) / lt;
+	hr = (hit - lhit) / iter->cpy_ctx->now;
+	mr = (miss - lmiss) / iter->cpy_ctx->now;
 	lhit = hit;
 	lmiss = miss;
 	if (hr + mr != 0) {
@@ -126,14 +122,12 @@ VCL_STRING
 vmod_rtstatus(const struct vrt_ctx *ctx)
 {
 	struct iter_priv iter = { 0 };
-	struct tm t_time;
 	struct VSM_data *vd;
-
 	const struct VSC_C_main *VSC_C_main;
-	vd = VSM_New();
 
+	vd = VSM_New();
 	if (VSM_Open(vd)) {
-	    VSM_Error(vd);
+	    fprintf(stderr, "%s\n", VSM_Error(vd));
 	    VSM_Delete(vd);
 	    return "";
 	}
@@ -141,12 +135,8 @@ vmod_rtstatus(const struct vrt_ctx *ctx)
 	iter.p = ctx->ws->f;
 	*(iter.p) = 0;
 	iter.cpy_ctx = ctx;
-
-	iter.jp = 1;
-	VSC_C_main = VSC_Main(vd, NULL);
-
+       	iter.jp = 1;
 	run_subroutine(&iter, vd);
-
 	VSM_Delete(vd);
 	WS_Release(ctx->ws, strlen(iter.p) + 1);
 	return(iter.p);

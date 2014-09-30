@@ -22,7 +22,6 @@ int
 backend(struct iter_priv *iter)
 {
 	int i;
-	int cont = 1;
 
 	STRCAT(iter->p, "\t\"backend\": [", iter->cpy_ctx);
 	for (i = 1; i < iter->cpy_ctx->vcl->ndirector; ++i) {
