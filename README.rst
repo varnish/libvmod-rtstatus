@@ -13,7 +13,7 @@ Varnish Real-Time Status Module
 -------------------------------
 
 :Author: Arianna Aondio
-:Date: 2014-07-03
+:Date: 2014-09-30
 :Version: 1.0
 
 SYNOPSIS
