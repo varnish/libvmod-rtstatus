@@ -13,7 +13,7 @@ Varnish Real-Time Status Module
 -------------------------------
 
 :Author: Arianna Aondio
-:Date: 2014-07-03
+:Date: 2014-09-30
 :Version: 1.0
 
 SYNOPSIS
@@ -60,18 +60,6 @@ The source tree is based on autotools to configure the building, and
 does also have the necessary bits in place to do functional unit tests
 using the varnishtest tool.
 
-Usage::
-
- ./configure VARNISHSRC=DIR [VMODDIR=DIR]
-
-`VARNISHSRC` is the directory of the Varnish source tree for which to
-compile your vmod. Both the `VARNISHSRC` and `VARNISHSRC/include`
-will be added to the include search paths for your module.
-
-Optionally you can also set the vmod install directory by adding
-`VMODDIR=DIR` (defaults to the pkg-config discovered directory from your
-Varnish installation).
-
 Make targets:
 
 * make - builds the vmod
@@ -80,27 +68,26 @@ Make targets:
 
 In your VCL you could then use this vmod along the following lines::
         
+        vcl 4.0;
 	import std;
 	import rtstatus;
 
 	sub vcl_recv {
 		if (req.url ~ "/rtstatus.json") {
-        		error 700 "OK";
-        	}
+        		return(synth(700, "OK"));        	}
 		if (req.url ~ "/rtstatus") {
-			error 800 "OK";
+			return(synth(800, "OK"));
 		}
 	}
-
-	sub vcl_error {
-		if(obj.status == 700){
-			set obj.status = 200;
-			synthetic rtstatus.rtstatus();
+	sub vcl_synth {	
+		if (resp.status == 700){
+			set resp.status = 200;
+			synthetic(rtstatus.rtstatus());
 			return (deliver);
 		}
-		if(obj.status == 800) {
-			set obj.http.Content-Type = "text/html; charset=utf-8";
-			synthetic std.fileread("/home/arianna/libvmod-rtstatus/src/rtstatus.html");
+		if (resp.status == 800) {
+			set resp.http.Content-Type = "text/html; charset=utf-8";
+			synthetic(std.fileread("/home/arianna/libvmod-rtstatus/src/rtstatus.html"));
 			return (deliver);
 			}
 	}
