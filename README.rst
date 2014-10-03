@@ -31,14 +31,19 @@ visiting the URL /rtstatus.json on the Varnish server will produce an
 application/json response of the following format::
 
     {
-	"Timestamp" : "Thu, 24 Jul 2014 10:27:10 GMT",
-	"Varnish_Version" : "varnish-3.0.5 revision 8213a0b",
-	"Backend": {"name":"default", "value": "healthy"},
-	"Director": {"name":"simple", "vcl_name":"default"},
-	
-	"client_conn": {"descr": "Client connections accepted", "value": "1},
-	"LCK.cli.locks": {type": "LCK", "ident": "cli", "descr": "Lock Operations", "value": "15},
-	"VBE.default(127.0.0.1,,8080).happy": {type": "VBE", "ident": "default(127.0.0.1,,8080)", "descr": "Happy health probes", "value": "0},
+	"Uptime" : 0+00:09:38,
+	"hitrate": 0.00,
+	"load": 1,
+	"varnish_version" : "varnish-4.0.1 revision c6f20e4",
+	"server_id": "arianna-ThinkPad-X230",
+	"client_id": "127.0.0.1",
+	"backend": [{"director_name" : "simple" , "name":"default", "value": "healthy"},
+		{"director_name" : "simple" , "name":"server1", "value": "healthy"},
+		{"director_name" : "simple" , "name":"server2", "value": "healthy"}],
+	"MAIN.uptime": {"type": "MAIN", "descr": "Child process uptime", "value": 578},
+	"VBE.server1(192.168.0.10,,8081).vcls": {"type": "VBE", "ident": "server1(192.168.0.10,,8081)", "descr": "VCL references", "value": 1},
+	"VBE.server1(192.168.0.10,,8081).happy": {"type": "VBE", "ident": "server1(192.168.0.10,,8081)", "descr": "Happy health probes", "value": 0},
+	"VBE.server1(192.168.0.10,,8081).bereq_hdrbytes": {"type": "VBE", "ident": "server1(192.168.0.10,,8081)", "descr": "Request header bytes", "value": 0},
     }
 
 FUNCTIONS
@@ -50,6 +55,16 @@ rtstatus
 Prototype::
 
          rtstatus( )
+
+Return value
+	STRING
+
+html()
+------
+
+Prototype::
+
+         html( )
 
 Return value
 	STRING
@@ -68,7 +83,7 @@ Make targets:
 
 In your VCL you could then use this vmod along the following lines::
         
-        vcl 4.0;
+    vcl 4.0;
 	import std;
 	import rtstatus;
 
@@ -86,8 +101,9 @@ In your VCL you could then use this vmod along the following lines::
 			return (deliver);
 		}
 		if (resp.status == 800) {
+			set resp.status = 200;
 			set resp.http.Content-Type = "text/html; charset=utf-8";
-			synthetic(std.fileread("/home/arianna/libvmod-rtstatus/src/rtstatus.html"));
+			synthetic(rtstatus.html());
 			return (deliver);
 			}
 	}
