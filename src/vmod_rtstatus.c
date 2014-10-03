@@ -57,7 +57,7 @@ rate(struct iter_priv *iter,struct VSM_data *vd )
 	else ratio = 0;
 	up = VSC_C_main->uptime;
 
-	sprintf(tmp,"\t\"Uptime\" : %d+%02d:%02d:%02d,\n", (int)up / 86400, (int)(up % 86400) / 3600,(int)(up % 3600) / 60, (int)up % 60);
+	sprintf(tmp,"\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n", (int)up / 86400, (int)(up % 86400) / 3600,(int)(up % 3600) / 60, (int)up % 60);
 	STRCAT(iter->p, tmp, iter->cpy_ctx);
 	sprintf(tmp, "\t\"hitrate\": %.2f,\n", ratio);
 	STRCAT(iter->p, tmp, iter->cpy_ctx);
