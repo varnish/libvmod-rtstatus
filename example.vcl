@@ -39,8 +39,9 @@ sub vcl_synth {
 		return (deliver);
 	}
 	if (resp.status == 800) {
+		set resp.status = 200;
 		set resp.http.Content-Type = "text/html; charset=utf-8";
-		synthetic(std.fileread("/home/arianna/libvmod-rtstatus/src/rtstatus.html"));
+		synthetic(rtstatus.html());
 		return (deliver);
 	}
 }
