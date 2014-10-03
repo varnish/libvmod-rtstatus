@@ -83,7 +83,7 @@ Make targets:
 
 In your VCL you could then use this vmod along the following lines::
         
-    vcl 4.0;
+    	vcl 4.0;
 	import std;
 	import rtstatus;
 
