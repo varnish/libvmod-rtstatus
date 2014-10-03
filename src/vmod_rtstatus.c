@@ -4,6 +4,9 @@
 #include <time.h>
 #include <string.h>
 #include <sys/time.h>
+#include <math.h>
+#include <time.h>
+
 
 #include "vrt.h"
 #include "vrt_obj.h"
@@ -32,8 +35,9 @@ int
 rate(struct iter_priv *iter,struct VSM_data *vd )
 {
 	struct timeval tv;
-	double lt, tt, lhit, hit, lmiss, miss, hr, mr, ratio, up;
+	double lt, tt, lhit, hit, lmiss, miss, hr, mr, ratio;
 	char tmp[128];
+	time_t up;
 	const struct VSC_C_main *VSC_C_main;
 
 	gettimeofday(&tv, NULL);
@@ -51,13 +55,13 @@ rate(struct iter_priv *iter,struct VSM_data *vd )
 		ratio = (hr / (hr + mr)) * 100;
 	}
 	else ratio = 0;
-
 	up = VSC_C_main->uptime;
-	sprintf(tmp, "\t\"uptime\" : %.0f,\n", up);
+
+	sprintf(tmp,"\t\"Uptime\" : %d+%02d:%02d:%02d,\n", (int)up / 86400, (int)(up % 86400) / 3600,(int)(up % 3600) / 60, (int)up % 60);
 	STRCAT(iter->p, tmp, iter->cpy_ctx);
 	sprintf(tmp, "\t\"hitrate\": %.2f,\n", ratio);
 	STRCAT(iter->p, tmp, iter->cpy_ctx);
-	sprintf(tmp, "\t\"load\": %.0f,\n", (VSC_C_main->client_req / up));
+	sprintf(tmp, "\t\"load\": %.0f,\n", (VSC_C_main->client_req /(double)up));
 	STRCAT(iter->p, tmp, iter->cpy_ctx);
 	return(0);
 }
