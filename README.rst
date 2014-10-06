@@ -5,7 +5,7 @@ vmod_rtstatus
 
 .. image:: https://travis-ci.org/mirakui/retrobot.svg?branch=v0.3.2
    :alt: Travis CI badge
-   :target: http://travis-ci.org/libvmod-rtstatus
+   :target: https://travis-ci.org/mirakui/retrobot.svg?branch=v0.3.2 
 
 
 -------------------------------
