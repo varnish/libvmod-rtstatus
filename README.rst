@@ -3,9 +3,9 @@ vmod_rtstatus
 =============
 
 
-.. image:: https://secure.travis-ci.org/aondio/libvmod-rtstatus.png
+.. image:: https://travis-ci.org/aondio/libvmod-rtstatus.png
    :alt: Travis CI badge
-   :target: http://travis-ci.org/libvmod-rtstatus
+   :target: https://travis-ci.org/aondio/libvmod-rtstatus/
 
 
 -------------------------------
