@@ -3,7 +3,7 @@ vmod_rtstatus
 =============
 
 
-.. image:: https://secure.travis-ci.org/aondio/libvmod-rtstatus.png
+.. image:: https://travis-ci.org/mirakui/retrobot.svg?branch=v0.3.2
    :alt: Travis CI badge
    :target: http://travis-ci.org/libvmod-rtstatus
 
