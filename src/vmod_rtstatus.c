@@ -24,7 +24,6 @@ struct ws {
 	char			*e;		/* (E)nd of buffer */
 };
 
-
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 {
