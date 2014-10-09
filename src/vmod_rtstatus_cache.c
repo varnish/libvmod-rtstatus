@@ -25,7 +25,7 @@ backend(struct iter_priv *iter)
 
 	STRCAT(iter->p, "\t\"backend\": [", iter->cpy_ctx);
 	for (i = 1; i < iter->cpy_ctx->vcl->ndirector; ++i) {
-		CHECK_OBJ_NOTNULL(iter->cpy_ctx->vcl->director[i], DIRECTOR_MAGIC);
+		//CHECK_OBJ_NOTNULL(iter->cpy_ctx->vcl->director[i], DIRECTOR_MAGIC);
 		if (strcmp("simple", iter->cpy_ctx->vcl->director[i]->name) == 0) {
 			char buf[1024];
 			int j, healthy;
