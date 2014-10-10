@@ -1,10 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "vsb.h"
-#include "vrt.h"
-#include "vrt_obj.h"
 #include "cache/cache.h"
 #include "vapi/vsm.h"
 #include "vcl.h"
@@ -53,29 +46,36 @@ general_info(struct iter_priv *iter)
 	return(0);
 }
 
-
-
 VCL_STRING
 vmod_rtstatus(const struct vrt_ctx *ctx)
 {
+	const struct VSC_C_main *VSC_C_main;
 	struct iter_priv iter = { 0 };
 	struct VSM_data *vd;
-	const struct VSC_C_main *VSC_C_main;
 
-	iter.vsb = VSB_new_auto();
 	vd = VSM_New();
 	if (VSM_Open(vd)) {
-		VSLb(ctx->vsl, SLT_VCL_Error, "Can't open VSM");	    
+	    VSLb(ctx->vsl, SLT_VCL_Error, "Can't open VSM");
 	    VSM_Delete(vd);
 	    return "{}";
 	}
 	WS_Reserve(ctx->ws, 0);
-	iter.vsb->s_buf = ctx->ws->f;
+	iter.p = ctx->ws->f;
+	iter.vsb = VSB_new_auto();
 	iter.cpy_ctx = ctx;
        	iter.jp = 1;
 	run_subroutine(&iter, vd);
 	VSB_finish(iter.vsb);
+	if (VSB_error(iter.vsb)) {
+	    VSLb(ctx->vsl, SLT_VCL_Error, "VSB error");
+	    VSB_delete(iter.vsb);
+	    VSM_Delete(vd);
+	    WS_Release(ctx->ws, strlen(iter.vsb->s_buf) + 1);
+	    return "{}";
+	}
+	strcpy(iter.p, iter.vsb->s_buf);
+	VSB_delete(iter.vsb);
 	VSM_Delete(vd);
-	WS_Release(ctx->ws, strlen(iter.vsb->s_buf) + 1);
-	return(iter.vsb->s_buf);
+	WS_Release(ctx->ws, strlen(iter.p) + 1);
+	return(iter.p);
 }
