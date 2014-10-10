@@ -1,17 +1,10 @@
 #include <inttypes.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <time.h>
-#include <string.h>
 #include <sys/time.h>
 #include <math.h>
 #include <time.h>
 
-#include "vsb.h"
-#include "vrt.h"
-#include "vrt_obj.h"
 #include "vapi/vsc.h"
-#include "vapi/vsm.h"
 #include "vmod_rtstatus.h"
 
 struct ws {
