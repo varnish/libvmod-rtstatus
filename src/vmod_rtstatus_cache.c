@@ -59,23 +59,18 @@ vmod_rtstatus(const struct vrt_ctx *ctx)
 	    VSM_Delete(vd);
 	    return "{}";
 	}
-	WS_Reserve(ctx->ws, 0);
-	iter.p = ctx->ws->f;
-	iter.vsb = VSB_new_auto();
+	iter.vsb = VSB_new(NULL, ctx->ws->f, WS_Reserve(ctx->ws, 0), VSB_AUTOEXTEND);
 	iter.cpy_ctx = ctx;
        	iter.jp = 1;
 	run_subroutine(&iter, vd);
 	VSB_finish(iter.vsb);
 	if (VSB_error(iter.vsb)) {
 	    VSLb(ctx->vsl, SLT_VCL_Error, "VSB error");
-	    VSB_delete(iter.vsb);
 	    VSM_Delete(vd);
-	    WS_Release(ctx->ws, strlen(iter.vsb->s_buf) + 1);
+	    WS_Release(ctx->ws, VSB_len(iter.vsb) + 1);
 	    return "{}";
 	}
-	strcpy(iter.p, iter.vsb->s_buf);
-	VSB_delete(iter.vsb);
 	VSM_Delete(vd);
-	WS_Release(ctx->ws, strlen(iter.p) + 1);
-	return(iter.p);
+	WS_Release(ctx->ws, VSB_len(iter.vsb) + 1);
+	return(iter.vsb->s_buf);
 }

@@ -10,7 +10,6 @@
 struct iter_priv{
 	const struct vrt_ctx *cpy_ctx;
 	struct vsb *vsb;
-	char *p;
 	int jp;
 };
 
