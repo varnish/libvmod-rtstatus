@@ -24,10 +24,10 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
 	const struct VSC_C_main *VSC_C_main;
 	struct timeval tv;
 	time_t up;
-	
+
 	gettimeofday(&tv, NULL);
 	tt = tv.tv_usec * 1e-6 + tv.tv_sec;
-	
+
 	VSC_C_main = VSC_Main(vd,NULL);
 	hr = (VSC_C_main->cache_hit - lhit) / tt;
 	mr = (VSC_C_main->cache_miss - lmiss) / tt;
@@ -43,7 +43,8 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
 	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", ratio);
-	VSB_printf(iter->vsb, "\t\"load\": %.0f,\n", (VSC_C_main->client_req / (double) up));
+	VSB_printf(iter->vsb, "\t\"load\": %.0f,\n",
+	    (VSC_C_main->client_req / (double) up));
 	return(0);
 }
 
@@ -54,7 +55,7 @@ json_status(void *priv, const struct VSC_point *const pt)
 	const struct VSC_section *sec;
 	char tmp[128];
 	uint64_t val;
-	
+
 	if (pt == NULL)
 		return (0);
 
@@ -68,7 +69,7 @@ json_status(void *priv, const struct VSC_point *const pt)
 		VSB_cat(iter->vsb, "\t\"");
 	if (strcmp(sec->fantom->type, "")) {
 		VSB_cat(iter->vsb, sec->fantom->type);
-		VSB_cat(iter->vsb, ".");		
+		VSB_cat(iter->vsb, ".");
 	}
 	if (strcmp(sec->fantom->ident, "")) {
 		VSB_cat(iter->vsb, sec->fantom->ident);
@@ -98,7 +99,7 @@ json_status(void *priv, const struct VSC_point *const pt)
 int
 run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
 {
-    VSB_cat(iter->vsb, "{\n");
+	VSB_cat(iter->vsb, "{\n");
 	rate(iter, vd);
 	general_info(iter);
 	backend(iter);
@@ -106,4 +107,3 @@ run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
 	VSB_cat(iter->vsb, "\n}\n");
 	return(0);
 }
-
