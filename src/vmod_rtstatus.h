@@ -1,7 +1,16 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "vsb.h"
+#include "vrt.h"
+#include "vrt_obj.h"
 #include "vapi/vsm.h"
+
 struct iter_priv{
 	const struct vrt_ctx *cpy_ctx;
 	struct vsb *vsb;
+	char *p;
 	int jp;
 };
 
