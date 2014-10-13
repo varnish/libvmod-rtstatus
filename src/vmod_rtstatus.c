@@ -20,7 +20,7 @@ struct ws {
 int
 rate(struct iter_priv *iter, struct VSM_data *vd)
 {
-	double tt, lhit, lmiss, hr, mr, ratio;
+	double tt, hr, mr, ratio;
 	const struct VSC_C_main *VSC_C_main;
 	struct timeval tv;
 	time_t up;
@@ -29,10 +29,8 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
 	tt = tv.tv_usec * 1e-6 + tv.tv_sec;
 
 	VSC_C_main = VSC_Main(vd,NULL);
-	hr = (VSC_C_main->cache_hit - lhit) / tt;
-	mr = (VSC_C_main->cache_miss - lmiss) / tt;
-	lhit = VSC_C_main->cache_hit;
-	lmiss = VSC_C_main->cache_miss;
+	hr = VSC_C_main->cache_hit / tt;
+	mr = VSC_C_main->cache_miss / tt;
 	if (hr + mr != 0) {
 		ratio = (hr / (hr + mr)) * 100;
 	}
