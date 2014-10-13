@@ -35,7 +35,7 @@ sub vcl_recv {
 sub vcl_synth {
 	if (resp.status == 700) {
 		set resp.status = 200;
-		set resp.http.Content-Type = "text/html; charset=utf-8";
+		set resp.http.Content-Type = "text/plain; charset=utf-8";
 		synthetic(rtstatus.rtstatus());
 		return (deliver);
 	}
