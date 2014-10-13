@@ -272,7 +272,4 @@ char *html = 	"<!DOCTYPE html>\n"
 		"	<script src=\"https://oss.maxcdn.com/respond/1.4.2/respond.min.js\"></script>\n"
 		"	<![endif]-->\n"
 		"  </body>\n"
-		"</html>\n"
-
-
-    ;
+		"</html>\n" ;
