@@ -1,4 +1,4 @@
-<script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js">
 
 
   function openSpoiler(id){
@@ -86,3 +86,4 @@ if(cont > 7){
     };
     var myVar = setInterval(function(){info()}, 1000);
 
+</script>
