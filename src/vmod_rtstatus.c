@@ -40,6 +40,7 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
 	VSB_printf(iter->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
+	VSB_printf(iter->vsb, "\t\"uptime_sec\": %.2f,\n", (double) up);
 	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", ratio);
 	VSB_printf(iter->vsb, "\t\"load\": %.0f,\n",
 	    (VSC_C_main->client_req / (double) up));
