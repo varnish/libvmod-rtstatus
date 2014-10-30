@@ -1,5 +1,5 @@
 char *html = 
-		"<!DOCTYPE html>\n"
+	"<!DOCTYPE html>\n"
 	"<html lang=\"en\">\n"
 	"  <head>\n"
 	"    <meta charset=\"utf-8\">\n"
@@ -116,7 +116,6 @@ char *html =
 	"var id_json_hdr;\n"
 	"var id_json_body;\n"
 	"function loadFileJSON_resp( toLocalStorage, fromUrl){\n"
-	""
 	"	var k=0;\n"
 	"	var sum_json_req=[];\n"
 	"	var a=0;\n"
