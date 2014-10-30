@@ -8,11 +8,11 @@ backend default {
 	.port = "8080";
 }
 backend server1 {
-	.host = "192.168.0.10";
+	.host = "127.0.0.1";
 	.port ="8081";
 }
 backend server2 {
-	.host = "192.168.0.10";
+	.host = "127.0.0.1";
 	.port = "8082";
 }
 
