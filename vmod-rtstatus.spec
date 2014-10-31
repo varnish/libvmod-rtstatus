@@ -6,7 +6,7 @@ License: BSD
 Group: System Environment/Daemons
 Source0: libvmod-rtstatus.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires: varnish > 3.0
+Requires: varnish > 4.0
 BuildRequires: make, python-docutils
 
 %description
