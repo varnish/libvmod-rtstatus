@@ -47,7 +47,7 @@ application/json response of the following format::
     }
 
 
-[Read more words!](varnishstatus.png)
+[Read more words!](/varnishstatus.png)
 FUNCTIONS
 =========
 
