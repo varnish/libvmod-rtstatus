@@ -46,8 +46,9 @@ application/json response of the following format::
 	"VBE.server1(192.168.0.10,,8081).bereq_hdrbytes": {"type": "VBE", "ident": "server1(192.168.0.10,,8081)", "descr": "Request header bytes", "value": 0},
     }
 
+.. image:: varnishstatus.png
+   :alt: RTstatus frontend
 
-[Read more words!](/varnishstatus.png)
 FUNCTIONS
 =========
 
