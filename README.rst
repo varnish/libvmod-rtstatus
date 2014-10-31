@@ -47,7 +47,7 @@ application/json response of the following format::
     }
 
 visiting the URL /rtstatus on the Varnish server will produce an
-application/javascript response of the following format::
+application/javascript response of the following format
 
 .. image:: varnishstatus.png
    :alt: RTstatus frontend
