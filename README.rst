@@ -46,6 +46,9 @@ application/json response of the following format::
 	"VBE.server1(192.168.0.10,,8081).bereq_hdrbytes": {"type": "VBE", "ident": "server1(192.168.0.10,,8081)", "descr": "Request header bytes", "value": 0},
     }
 
+visiting the URL /rtstatus on the Varnish server will produce an
+application/javascript response of the following format::
+
 .. image:: varnishstatus.png
    :alt: RTstatus frontend
 
