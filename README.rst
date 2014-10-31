@@ -13,7 +13,7 @@ Varnish Real-Time Status Module
 -------------------------------
 
 :Author: Arianna Aondio
-:Date: 2014-09-30
+:Date: 2014-10-31
 :Version: 1.0
 
 SYNOPSIS
@@ -97,6 +97,7 @@ In your VCL you could then use this vmod along the following lines::
 	sub vcl_synth {	
 		if (resp.status == 700){
 			set resp.status = 200;
+			set resp.http.Content-Type = "text/plain; charset=utf-8";
 			synthetic(rtstatus.rtstatus());
 			return (deliver);
 		}
