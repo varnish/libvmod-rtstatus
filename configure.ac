@@ -29,23 +29,21 @@ if test "x$RST2MAN" = "xno"; then
 fi
 AM_CONDITIONAL(HAVE_RST2MAN, [test "x$RST2MAN" != "xno"])
 
-# Check for pkg-config
-#PKG_PROG_PKG_CONFIG
-
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([sys/stdlib.h])
 
 
+PKG_CHECK_MODULES([libvarnishapi], [varnishapi])
 
 # Varnish include files tree
 VARNISH_VMOD_INCLUDES
 VARNISH_VMOD_DIR
 VARNISH_VMODTOOL
-AC_PATH_PROG([VARNISHTEST], [varnishtest])
-AC_PATH_PROG([VARNISHD], [varnishd])
 
-PKG_CHECK_MODULES([VARNISHAPI], [varnishapi])
+AC_PATH_PROG([VARNISHTEST], [varnishtest])
+AC_PATH_PROG([VARNISHD], [varnishd], [],
+    [$PATH:$PATH:`pkg-config varnishapi --variable=sbindir`])
 
 AC_CONFIG_FILES([
 	Makefile
