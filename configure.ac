@@ -45,6 +45,8 @@ VARNISH_VMODTOOL
 AC_PATH_PROG([VARNISHTEST], [varnishtest])
 AC_PATH_PROG([VARNISHD], [varnishd])
 
+PKG_CHECK_MODULES([VARNISHAPI], [varnishapi])
+
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
