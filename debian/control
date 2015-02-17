@@ -13,5 +13,5 @@ Vcs-Git: git://github.com/varnish/libvmod-rtstatus.git
 
 Package: libvmod-rtstatus
 Architecture: any
-Depends: varnish (>= 4.0.2), ${Varnish:ABI}, ${misc:Depends}
+Depends: varnish (>= 4.0.2), ${Varnish:ABI}, ${shlibs:Depends}, ${misc:Depends}
 Description: Real Time status page for Varnish.
