@@ -52,7 +52,7 @@ json_status(void *priv, const struct VSC_point *const pt)
 {
 	struct iter_priv *iter = priv;
 	const struct VSC_section *sec;
-	char tmp[128];
+//	char tmp[128];
 	uint64_t val;
 
 	if (pt == NULL)

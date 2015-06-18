@@ -49,7 +49,7 @@ general_info(struct iter_priv *iter)
 VCL_STRING
 vmod_rtstatus(const struct vrt_ctx *ctx)
 {
-	const struct VSC_C_main *VSC_C_main;
+//	const struct VSC_C_main *VSC_C_main;
 	struct iter_priv iter = { 0 };
 	struct VSM_data *vd;
 
