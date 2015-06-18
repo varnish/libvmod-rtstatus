@@ -7,16 +7,6 @@
 #include "vapi/vsc.h"
 #include "vmod_rtstatus.h"
 
-struct ws {
-	unsigned		magic;
-#define WS_MAGIC		0x35fac554
-	char			id[4];		/* identity */
-	char			*s;		/* (S)tart of buffer */
-	char			*f;		/* (F)ree/front pointer */
-	char			*r;		/* (R)eserved length */
-	char			*e;		/* (E)nd of buffer */
-};
-
 int
 rate(struct iter_priv *iter, struct VSM_data *vd)
 {
@@ -28,7 +18,10 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
 	gettimeofday(&tv, NULL);
 	tt = tv.tv_usec * 1e-6 + tv.tv_sec;
 
-	VSC_C_main = VSC_Main(vd,NULL);
+	VSC_C_main = VSC_Main(vd, NULL);
+	if (VSC_C_main == NULL) {
+		return(-1);
+	}
 	hr = VSC_C_main->cache_hit / tt;
 	mr = VSC_C_main->cache_miss / tt;
 	if (hr + mr != 0) {
@@ -52,7 +45,6 @@ json_status(void *priv, const struct VSC_point *const pt)
 {
 	struct iter_priv *iter = priv;
 	const struct VSC_section *sec;
-//	char tmp[128];
 	uint64_t val;
 
 	if (pt == NULL)
@@ -99,10 +91,11 @@ int
 run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
 {
 	VSB_cat(iter->vsb, "{\n");
-	rate(iter, vd);
-	general_info(iter);
-	backend(iter);
-	(void)VSC_Iter(vd, NULL, json_status, iter);
+	if (rate(iter, vd) != -1) {
+		general_info(iter);
+		backend(iter);
+		(void)VSC_Iter(vd, NULL, json_status, iter);
+	}
 	VSB_cat(iter->vsb, "\n}\n");
 	return(0);
 }
