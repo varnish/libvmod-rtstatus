@@ -9,12 +9,12 @@ varnish v1 -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
 
 	sub vcl_recv {
-		if( req.url ~ "/rtstatus") {
+		if (req.url ~ "/rtstatus") {
 			return(synth(200, "OK"));
 		}
 	}
 	sub vcl_synth {
-		if( resp.status == 200) {
+		if (resp.status == 200) {
 			synthetic(rtstatus.rtstatus());
 			return(deliver);
 		}	
@@ -25,12 +25,12 @@ varnish v2 -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
 
 	sub vcl_recv {
-		if( req.url !~ "/rtstatus") {
+		if (req.url !~ "/rtstatus") {
 			return(synth(503, "KO"));
 		}
 	}
 	sub vcl_synth {
-		if( resp.status == 503) {
+		if (resp.status == 503) {
 			set resp.http.Header = "KO";
 			return(deliver);
 		}	

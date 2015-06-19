@@ -9,12 +9,12 @@ varnish v1 -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
 
 	sub vcl_recv {
-		if( req.url ~ "/rtstatus") {
+		if (req.url ~ "/rtstatus") {
 			return(synth(800, "OK"));
 		}
 	}
 	sub vcl_synth {
-		if( resp.status == 800) {
+		if (resp.status == 800) {
 			synthetic(rtstatus.rtstatus());
 			return(deliver);
 		}	
@@ -25,7 +25,7 @@ client c1 {
 	txreq -url "/rtstatus"
 	rxresp
 	expect resp.status == 800
-}
-client c1 -run
+	expect resp.bodylen > 200
+} -run
 
 
