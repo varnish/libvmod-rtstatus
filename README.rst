@@ -121,4 +121,4 @@ COPYRIGHT
 This document is licensed under the same license as the
 libvmod-rtstatus project. See LICENSE for details.
 
-* Copyright (c) 2014 Varnish Software
+* Copyright (c) 2015 Varnish Software
