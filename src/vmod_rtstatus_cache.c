@@ -7,22 +7,24 @@
 int
 backend(struct iter_priv *iter)
 {
+	const struct vrt_ctx *ctx = iter->cpy_ctx;
 	int i;
 
 	VSB_cat(iter->vsb, "\t\"backend\": [");
 	for (i = 1; i < iter->cpy_ctx->vcl->ndirector; ++i) {
-		CHECK_OBJ_NOTNULL(iter->cpy_ctx->vcl->director[i], DIRECTOR_MAGIC);
-		if (strcmp("simple", iter->cpy_ctx->vcl->director[i]->name) == 0) {
+		CHECK_OBJ_NOTNULL(ctx->vcl->director[i], DIRECTOR_MAGIC);
+		if (strcmp("simple", ctx->vcl->director[i]->name) == 0) {
 			char buf[1024];
 			int j, healthy;
-			healthy = VDI_Healthy(iter->cpy_ctx->vcl->director[i]);
-			j = snprintf(buf, sizeof buf, "{\"director_name\" : \"%s\" , \"name\":\"%s\", \"value\": \"%s\"}",
-					iter->cpy_ctx->vcl->director[i]->name,
-					iter->cpy_ctx->vcl->director[i]->vcl_name,
-					healthy ? "healthy" : "sick");
+			healthy = VDI_Healthy(ctx->vcl->director[i]);
+			j = snprintf(buf, sizeof buf, "{\"director_name\" :"
+			    " \"%s\" , \"name\":\"%s\", \"value\": \"%s\"}",
+			    ctx->vcl->director[i]->name,
+			    ctx->vcl->director[i]->vcl_name,
+			    healthy ? "healthy" : "sick");
 			assert(j >= 0);
 			VSB_cat(iter->vsb, buf);
-			if (i < (iter->cpy_ctx->vcl->ndirector - 1)) {
+			if (i < (ctx->vcl->ndirector - 1)) {
 			    VSB_cat(iter->vsb, ",\n\t\t");
 			}
 		}
@@ -49,9 +51,9 @@ general_info(struct iter_priv *iter)
 VCL_STRING
 vmod_rtstatus(const struct vrt_ctx *ctx)
 {
-//	const struct VSC_C_main *VSC_C_main;
 	struct iter_priv iter = { 0 };
 	struct VSM_data *vd;
+	unsigned u;
 
 	vd = VSM_New();
 	if (VSM_Open(vd)) {
@@ -59,7 +61,8 @@ vmod_rtstatus(const struct vrt_ctx *ctx)
 	    VSM_Delete(vd);
 	    return "{}";
 	}
-	iter.vsb = VSB_new(NULL, ctx->ws->f, WS_Reserve(ctx->ws, 0), VSB_AUTOEXTEND);
+	u =  WS_Reserve(ctx->ws, 0);
+	iter.vsb = VSB_new(NULL, ctx->ws->f, u, VSB_AUTOEXTEND);
 	iter.cpy_ctx = ctx;
        	iter.jp = 1;
 	run_subroutine(&iter, vd);
