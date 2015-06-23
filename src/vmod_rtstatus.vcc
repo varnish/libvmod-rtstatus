@@ -1,3 +1,4 @@
 $Module rtstatus 3 rtstatus VMOD
+$Init init_function
 $Function STRING rtstatus()
 $Function STRING html()
