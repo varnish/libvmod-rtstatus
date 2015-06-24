@@ -7,37 +7,97 @@
 #include "vapi/vsc.h"
 #include "vmod_rtstatus.h"
 
+struct counter {
+        unsigned n, nmax;
+        double acc;
+};
+
+struct hitrate {
+        double lt;
+        uint64_t lhit, lmiss;
+        struct counter hr_10;
+};
+static struct hitrate hitrate;
+
+double
+VTIM_mono(void)
+{
+#ifdef HAVE_GETHRTIME
+        return (gethrtime() * 1e-9);
+#elif  HAVE_CLOCK_GETTIME
+        struct timespec ts;
+
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        return (ts.tv_sec + 1e-9 * ts.tv_nsec);
+#else
+        struct timeval tv;
+
+        gettimeofday(&tv, NULL);
+        return (tv.tv_sec + 1e-6 * tv.tv_usec);
+#endif
+}
+
 int
+init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
+{
+	memset(&hitrate, 0, sizeof(struct hitrate));
+
+	hitrate.hr_10.nmax = 10;
+	hitrate.hr_10.acc = 0;
+	hitrate.hr_10.n = 0;
+	hitrate.lmiss = 0;
+	hitrate.lhit = 0;
+	return (0);
+}
+
+static void
+update_counter(struct counter *counter, double val)
+{
+        if (counter->n < counter->nmax)
+                counter->n++;
+        counter->acc += (val - counter->acc) / (double)counter->n;
+}
+
+void
 rate(struct iter_priv *iter, struct VSM_data *vd)
 {
-	double tt, hr, mr, ratio;
-	const struct VSC_C_main *VSC_C_main;
-	struct timeval tv;
+	struct VSC_C_main *VSC_C_main;
+	double hr, mr, ratio, tv, dt;
+	uint64_t hit, miss;
 	time_t up;
 
-	gettimeofday(&tv, NULL);
-	tt = tv.tv_usec * 1e-6 + tv.tv_sec;
-
 	VSC_C_main = VSC_Main(vd, NULL);
-	if (VSC_C_main == NULL) {
-		return(-1);
-	}
-	hr = VSC_C_main->cache_hit / tt;
-	mr = VSC_C_main->cache_miss / tt;
-	if (hr + mr != 0) {
-		ratio = (hr / (hr + mr)) * 100;
-	}
-	else ratio = 0.0;
+        if (VSC_C_main == NULL)
+                return;
+
+        tv = VTIM_mono();
+        dt = tv - hitrate.lt;
+        hitrate.lt = tv;
+
+        hit = VSC_C_main->cache_hit;
+        miss = VSC_C_main->cache_miss;
+        hr = (hit - hitrate.lhit) / dt;
+        mr = (miss - hitrate.lmiss) / dt;
+        hitrate.lhit = hit;
+        hitrate.lmiss = miss;
+
+        if (hr + mr != 0)
+                ratio = hr / (hr + mr);
+        else
+                ratio = 0;
+
+        update_counter(&hitrate.hr_10, ratio);
+
 	up = VSC_C_main->uptime;
 
 	VSB_printf(iter->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
 	VSB_printf(iter->vsb, "\t\"uptime_sec\": %.2f,\n", (double) up);
-	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", ratio);
+	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", hitrate.hr_10.acc*100);
 	VSB_printf(iter->vsb, "\t\"load\": %.0f,\n",
 	    (VSC_C_main->client_req / (double) up));
-	return(0);
+
 }
 
 int
@@ -91,11 +151,10 @@ int
 run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
 {
 	VSB_cat(iter->vsb, "{\n");
-	if (rate(iter, vd) != -1) {
-		general_info(iter);
-		backend(iter);
-		(void)VSC_Iter(vd, NULL, json_status, iter);
-	}
+	rate(iter, vd);
+	general_info(iter);
+	backend(iter);
+	(void)VSC_Iter(vd, NULL, json_status, iter);
 	VSB_cat(iter->vsb, "\n}\n");
 	return(0);
 }
