@@ -172,7 +172,6 @@ char *html =
 	"		});\n"
 	"$('table#info TBODY').html(\"\");\n"
 	"$('table#info TBODY').append('<tr><td>'+\"<b>Varnish version: </b> \"+'</td><td>'+data.varnish_version +'</td><td></tr>');\n"
-	"$('table#info TBODY').append('<tr><td>'+\"<b>Server identity: </b> \"+'</td><td>'+data.server_id +'</td><td></tr>');\n"
 	"$('table#info TBODY').append('<tr><td>'+\"<b>Varnish uptime: </b> \"+'</td><td>'+data.uptime +'</td><td></tr>');\n"
 	"$('table#info TBODY').append('<tr><td>'+\"<b>Hitrate: </b> \"+'</td><td>'+data.hitrate + ' %'+'</td><td></tr>');\n"
 	"$('table#info TBODY').append('<tr><td>'+\"<b>Load: </b> \"+'</td><td>'+data.load +' req/s'+'</td><td></tr>');\n"
