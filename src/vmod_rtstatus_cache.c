@@ -36,17 +36,20 @@ backend(struct iter_priv *iter)
 int
 general_info(struct iter_priv *iter)
 {
+	static char vrt_hostname[255] = "";
 	VSB_cat(iter->vsb, "\t\"varnish_version\" : \"");
 	VSB_cat(iter->vsb, VCS_version);
 	VSB_cat(iter->vsb, "\",\n");
-	/* These VRT functions require WE_Reserve and this
-	   trigger a panic */
-/*	VSB_cat(iter->vsb, "\t\"server_id\": \"");
-	VSB_cat(iter->vsb, VRT_r_server_identity(iter->cpy_ctx));
+	gethostname(vrt_hostname, sizeof(vrt_hostname));
+	VSB_cat(iter->vsb, "\t\"server_id\": \"");
+	VSB_cat(iter->vsb, vrt_hostname );
 	VSB_cat(iter->vsb, "\",\n");
 	VSB_cat(iter->vsb, "\t\"client_id\": \"");
-	VSB_cat(iter->vsb, VRT_r_client_identity(iter->cpy_ctx));
-	VSB_cat(iter->vsb, "\",\n");*/
+        if (iter->cpy_ctx->req->client_identity != NULL)
+		VSB_cat(iter->vsb, iter->cpy_ctx->req->client_identity);
+        else
+		VSB_cat(iter->vsb, iter->cpy_ctx->req->sp->client_addr_str);
+     	VSB_cat(iter->vsb, "\",\n");
 	return(0);
 }
 
