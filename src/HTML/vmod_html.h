@@ -96,7 +96,7 @@ char *html =
 	"</div>\n"
 	"<div class=\"footer\">\n"
 	"  <div class=\"container\">\n"
-	"    <p>&copy;Copyright 2014 Varnish Software AS</p>\n"
+	"    <p>&copy;Copyright 2015 Varnish Software AS</p>\n"
 	"  </div>\n"
 	"</div>\n"
 	"<script>\n"
