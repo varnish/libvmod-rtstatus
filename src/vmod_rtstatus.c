@@ -18,6 +18,7 @@ struct hitrate {
         struct counter hr_10;
 };
 static struct hitrate hitrate;
+static struct hitrate load;
 
 double
 VTIM_mono(void)
@@ -47,6 +48,10 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 	hitrate.hr_10.n = 0;
 	hitrate.lmiss = 0;
 	hitrate.lhit = 0;
+	load.hr_10.nmax = 10;
+	load.hr_10.acc = 0;
+	load.hr_10.n = 0;
+	load.lhit = 0;
 	return (0);
 }
 
@@ -86,17 +91,20 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
         else
                 ratio = 0;
 
-        update_counter(&hitrate.hr_10, ratio);
-
 	up = VSC_C_main->uptime;
+	int req = VSC_C_main->client_req;
+	double reqload  =  ((req - load.lhit) / 10);
+	load.lhit = req;
+
+	update_counter(&hitrate.hr_10, ratio);
+	update_counter(&load.hr_10, reqload);
 
 	VSB_printf(iter->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
 	VSB_printf(iter->vsb, "\t\"uptime_sec\": %.2f,\n", (double) up);
 	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", hitrate.hr_10.acc*100);
-	VSB_printf(iter->vsb, "\t\"load\": %.0f,\n",
-	    (VSC_C_main->client_req / (double) up));
+	VSB_printf(iter->vsb, "\t\"load\": %.2f,\n", load.hr_10.acc);
 
 }
 
