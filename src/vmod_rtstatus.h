@@ -11,6 +11,7 @@ struct iter_priv{
 	const struct vrt_ctx *cpy_ctx;
 	struct vsb *vsb;
 	int jp;
+	double delta;
 };
 
 void WS_Release(struct ws *ws, unsigned bytes);

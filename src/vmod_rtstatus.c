@@ -43,12 +43,10 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 {
 	memset(&hitrate, 0, sizeof(struct hitrate));
 
-	hitrate.hr_10.nmax = 10;
 	hitrate.hr_10.acc = 0;
 	hitrate.hr_10.n = 0;
 	hitrate.lmiss = 0;
 	hitrate.lhit = 0;
-	load.hr_10.nmax = 10;
 	load.hr_10.acc = 0;
 	load.hr_10.n = 0;
 	load.lhit = 0;
@@ -93,7 +91,7 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
 
 	up = VSC_C_main->uptime;
 	int req = VSC_C_main->client_req;
-	double reqload  =  ((req - load.lhit) / 10);
+	double reqload  =  ((req - load.lhit) / dt);
 	load.lhit = req;
 
 	update_counter(&hitrate.hr_10, ratio);
@@ -158,6 +156,8 @@ json_status(void *priv, const struct VSC_point *const pt)
 int
 run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
 {
+	hitrate.hr_10.nmax = iter->delta;
+	load.hr_10.nmax = iter->delta;
 	VSB_cat(iter->vsb, "{\n");
 	rate(iter, vd);
 	general_info(iter);

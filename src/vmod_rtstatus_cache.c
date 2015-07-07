@@ -54,7 +54,7 @@ general_info(struct iter_priv *iter)
 }
 
 VCL_STRING
-vmod_rtstatus(const struct vrt_ctx *ctx)
+vmod_rtstatus(const struct vrt_ctx *ctx, VCL_REAL delta)
 {
 	struct iter_priv iter = { 0 };
 	struct VSM_data *vd;
@@ -70,6 +70,7 @@ vmod_rtstatus(const struct vrt_ctx *ctx)
 	iter.vsb = VSB_new(NULL, ctx->ws->f, u, VSB_AUTOEXTEND);
 	iter.cpy_ctx = ctx;
        	iter.jp = 1;
+	iter.delta = delta;
 	run_subroutine(&iter, vd);
 	VSB_finish(iter.vsb);
 	if (VSB_error(iter.vsb)) {
