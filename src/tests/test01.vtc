@@ -25,7 +25,6 @@ client c1 {
 	txreq -url "/rtstatus"
 	rxresp
 	expect resp.status == 800
-	expect resp.bodylen > 200
 } -run
 
 
