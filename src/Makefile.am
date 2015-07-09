@@ -7,8 +7,10 @@ libvmod_rtstatus_la_LDFLAGS = -module -export-dynamic -avoid-version -shared $(V
 libvmod_rtstatus_la_LIBADD = -lvarnishapi
 
 libvmod_rtstatus_la_SOURCES = \
+	vmod_rtstatus.h \
 	vmod_rtstatus.c \
 	vmod_rtstatus_cache.c \
+	HTML/vmod_html.h \
 	HTML/vmod_html.c
 
 nodist_libvmod_rtstatus_la_SOURCES = \
@@ -38,5 +40,5 @@ EXTRA_DIST = \
 CLEANFILES = \
 	$(builddir)/vcc_if.c \
 	$(builddir)/vcc_if.h \
-	$(builddir)/vmod_example.rst \
-	$(builddir)/vmod_example.man.rst
+	$(builddir)/vmod_rtstatus.rst \
+	$(builddir)/vmod_rtstatus.man.rst
