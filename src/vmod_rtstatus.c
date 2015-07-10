@@ -15,10 +15,15 @@ struct counter {
 struct hitrate {
         double lt;
         uint64_t lhit, lmiss;
-        struct counter hr_10;
+        struct counter hr;
 };
+struct load {
+	uint64_t req;
+	struct counter hr;
+};
+
 static struct hitrate hitrate;
-static struct hitrate load;
+static struct load load;
 
 double
 VTIM_mono(void)
@@ -42,14 +47,14 @@ int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 {
 	memset(&hitrate, 0, sizeof(struct hitrate));
-
-	hitrate.hr_10.acc = 0;
-	hitrate.hr_10.n = 0;
+	memset(&load, 0, sizeof(struct load));
+	hitrate.hr.acc = 0;
+	hitrate.hr.n = 0;
 	hitrate.lmiss = 0;
 	hitrate.lhit = 0;
-	load.hr_10.acc = 0;
-	load.hr_10.n = 0;
-	load.lhit = 0;
+	load.hr.acc = 0;
+	load.hr.n = 0;
+	load.req = 0;
 	return (0);
 }
 
@@ -64,10 +69,11 @@ update_counter(struct counter *counter, double val)
 void
 rate(struct iter_priv *iter, struct VSM_data *vd)
 {
+	double hr, mr, ratio, tv, dt, reqload;
 	struct VSC_C_main *VSC_C_main;
-	double hr, mr, ratio, tv, dt;
 	uint64_t hit, miss;
 	time_t up;
+	int req;
 
 	VSC_C_main = VSC_Main(vd, NULL);
         if (VSC_C_main == NULL)
@@ -90,19 +96,19 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
                 ratio = 0;
 
 	up = VSC_C_main->uptime;
-	int req = VSC_C_main->client_req;
-	double reqload  =  ((req - load.lhit) / dt);
-	load.lhit = req;
+	req = VSC_C_main->client_req;
+	reqload  =  ((req - load.req) / dt);
+	load.req = req;
 
-	update_counter(&hitrate.hr_10, ratio);
-	update_counter(&load.hr_10, reqload);
+	update_counter(&hitrate.hr, ratio);
+	update_counter(&load.hr, reqload);
 
 	VSB_printf(iter->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
 	VSB_printf(iter->vsb, "\t\"uptime_sec\": %.2f,\n", (double) up);
-	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", hitrate.hr_10.acc*100);
-	VSB_printf(iter->vsb, "\t\"load\": %.2f,\n", load.hr_10.acc);
+	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", hitrate.hr.acc*100);
+	VSB_printf(iter->vsb, "\t\"load\": %.2f,\n", load.hr.acc);
 
 }
 
@@ -156,8 +162,8 @@ json_status(void *priv, const struct VSC_point *const pt)
 int
 run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
 {
-	hitrate.hr_10.nmax = iter->delta;
-	load.hr_10.nmax = iter->delta;
+	hitrate.hr.nmax = iter->delta;
+	load.hr.nmax = iter->delta;
 	VSB_cat(iter->vsb, "{\n");
 	rate(iter, vd);
 	general_info(iter);
