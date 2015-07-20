@@ -25,6 +25,11 @@ struct load {
 static struct hitrate hitrate;
 static struct load load;
 
+uint64_t  bereq_hdr, bereq_body;
+uint64_t  beresp_hdr, beresp_body;
+
+int n_be = 0;
+int cont = 0;
 double
 VTIM_mono(void)
 {
@@ -107,9 +112,9 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
 	VSB_printf(iter->vsb, "\t\"uptime_sec\": %.2f,\n", (double) up);
-	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", hitrate.hr.acc*100);
+	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", hitrate.hr.acc * 100);
 	VSB_printf(iter->vsb, "\t\"load\": %.2f,\n", load.hr.acc);
-
+	VSB_printf(iter->vsb, "\t\"delta\": %.2f,\n", iter->delta);
 }
 
 int
@@ -160,15 +165,64 @@ json_status(void *priv, const struct VSC_point *const pt)
 }
 
 int
+creepy_math(void *priv, const struct VSC_point *const pt)
+{	struct iter_priv *iter = priv;
+	const struct VSC_section *sec;
+	uint64_t val;
+
+	if (pt == NULL)
+		return (0);
+
+	val = *(const volatile uint64_t *)pt->ptr;
+	sec = pt->section;
+	if(!strcmp(sec->fantom->type,"MAIN")){
+		if(!strcmp(pt->desc->name, "n_backend")){
+			n_be = (int)val;
+		}
+	}
+	if (!strcmp(sec->fantom->type, "VBE")) {
+		if(!strcmp(pt->desc->name, "bereq_hdrbytes"))
+			bereq_hdr = val;
+		if(!strcmp(pt->desc->name, "bereq_bodybytes")) {
+			bereq_body = val;
+			VSB_cat(iter->vsb, "{\"ident\":\"");
+			VSB_cat(iter->vsb, pt->section->fantom->ident);
+			VSB_printf(iter->vsb,"\", \"bereq_tot\": %" PRIu64 ",",
+			    bereq_body + bereq_hdr);
+		}
+
+		if(!strcmp(pt->desc->name, "beresp_hdrbytes"))
+			beresp_hdr = val;
+		if(!strcmp(pt->desc->name, "beresp_bodybytes")) {
+			beresp_body = val;
+			VSB_printf(iter->vsb,"\"beresp_tot\": %" PRIu64 "}",
+			    beresp_body + beresp_hdr);
+
+			if(cont < (n_be -1)) {
+				VSB_cat(iter->vsb, ",\n\t\t");
+				cont++;
+			}
+		}
+	}
+	return(0);
+}
+
+int
 run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
 {
 	hitrate.hr.nmax = iter->delta;
 	load.hr.nmax = iter->delta;
+
 	VSB_cat(iter->vsb, "{\n");
 	rate(iter, vd);
 	general_info(iter);
 	backend(iter);
+	VSB_cat(iter->vsb, "\t\"be_bytes\": [");
+	(void)VSC_Iter(vd, NULL, creepy_math, iter);
+	VSB_cat(iter->vsb, "],\n");
+	cont = 0;
 	(void)VSC_Iter(vd, NULL, json_status, iter);
 	VSB_cat(iter->vsb, "\n}\n");
 	return(0);
 }
+

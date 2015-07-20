@@ -42,7 +42,7 @@ general_info(struct iter_priv *iter)
 	VSB_cat(iter->vsb, "\",\n");
 	gethostname(vrt_hostname, sizeof(vrt_hostname));
 	VSB_cat(iter->vsb, "\t\"server_id\": \"");
-	VSB_cat(iter->vsb, vrt_hostname );
+	VSB_cat(iter->vsb, vrt_hostname);
 	VSB_cat(iter->vsb, "\",\n");
 	return(0);
 }
