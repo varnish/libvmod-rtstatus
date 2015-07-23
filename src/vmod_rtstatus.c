@@ -6,30 +6,13 @@
 
 #include "vapi/vsc.h"
 #include "vmod_rtstatus.h"
-
-struct counter {
-        unsigned n, nmax;
-        double acc;
-};
-
-struct hitrate {
-        double lt;
-        uint64_t lhit, lmiss;
-        struct counter hr;
-};
-struct load {
-	uint64_t req;
-	struct counter hr;
-};
-
+uint64_t  beresp_hdr, beresp_body;
+uint64_t  bereq_hdr, bereq_body;
 static struct hitrate hitrate;
 static struct load load;
+int n_be, cont;
 
-uint64_t  bereq_hdr, bereq_body;
-uint64_t  beresp_hdr, beresp_body;
 
-int n_be = 0;
-int cont = 0;
 double
 VTIM_mono(void)
 {
@@ -53,13 +36,10 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 {
 	memset(&hitrate, 0, sizeof(struct hitrate));
 	memset(&load, 0, sizeof(struct load));
-	hitrate.hr.acc = 0;
-	hitrate.hr.n = 0;
-	hitrate.lmiss = 0;
-	hitrate.lhit = 0;
-	load.hr.acc = 0;
-	load.hr.n = 0;
-	load.req = 0;
+	beresp_hdr = beresp_body = 0;
+	bereq_hdr = bereq_body = 0;
+	n_be = 0;
+	cont = 0;
 	return (0);
 }
 
@@ -85,15 +65,15 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
                 return;
 
         tv = VTIM_mono();
-        dt = tv - hitrate.lt;
-        hitrate.lt = tv;
+        dt = tv - hitrate.tm;
+        hitrate.tm = tv;
 
         hit = VSC_C_main->cache_hit;
         miss = VSC_C_main->cache_miss;
-        hr = (hit - hitrate.lhit) / dt;
-        mr = (miss - hitrate.lmiss) / dt;
-        hitrate.lhit = hit;
-        hitrate.lmiss = miss;
+        hr = (hit - hitrate.hit) / dt;
+        mr = (miss - hitrate.miss) / dt;
+        hitrate.hit = hit;
+        hitrate.miss = miss;
 
         if (hr + mr != 0)
                 ratio = hr / (hr + mr);
@@ -106,14 +86,14 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
 	load.req = req;
 
 	update_counter(&hitrate.hr, ratio);
-	update_counter(&load.hr, reqload);
+	update_counter(&load.rl, reqload);
 
 	VSB_printf(iter->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
-	VSB_printf(iter->vsb, "\t\"uptime_sec\": %.2f,\n", (double) up);
+	VSB_printf(iter->vsb, "\t\"uptime_sec\": %.2f,\n", (double)up);
 	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", hitrate.hr.acc * 100);
-	VSB_printf(iter->vsb, "\t\"load\": %.2f,\n", load.hr.acc);
+	VSB_printf(iter->vsb, "\t\"load\": %.2f,\n", load.rl.acc);
 	VSB_printf(iter->vsb, "\t\"delta\": %.2f,\n", iter->delta);
 }
 
@@ -166,7 +146,8 @@ json_status(void *priv, const struct VSC_point *const pt)
 
 int
 creepy_math(void *priv, const struct VSC_point *const pt)
-{	struct iter_priv *iter = priv;
+{
+	struct iter_priv *iter = priv;
 	const struct VSC_section *sec;
 	uint64_t val;
 
@@ -197,7 +178,6 @@ creepy_math(void *priv, const struct VSC_point *const pt)
 			beresp_body = val;
 			VSB_printf(iter->vsb,"\"beresp_tot\": %" PRIu64 "}",
 			    beresp_body + beresp_hdr);
-
 			if(cont < (n_be -1)) {
 				VSB_cat(iter->vsb, ",\n\t\t");
 				cont++;
@@ -211,8 +191,7 @@ int
 run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
 {
 	hitrate.hr.nmax = iter->delta;
-	load.hr.nmax = iter->delta;
-
+	load.rl.nmax = iter->delta;
 	VSB_cat(iter->vsb, "{\n");
 	rate(iter, vd);
 	general_info(iter);

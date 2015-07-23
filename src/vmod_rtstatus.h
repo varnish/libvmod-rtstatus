@@ -13,6 +13,21 @@ struct iter_priv{
 	int jp;
 	double delta;
 };
+struct counter {
+        unsigned n, nmax;
+        double acc;
+};
+
+struct hitrate {
+        double tm;
+        uint64_t hit, miss;
+        struct counter hr;         /* hr stands for hitrate */
+};
+struct load {
+	uint64_t req;
+	struct counter rl;         /* rl stands for reqload */
+};
+
 
 void WS_Release(struct ws *ws, unsigned bytes);
 unsigned WS_Reserve(struct ws *ws, unsigned bytes);

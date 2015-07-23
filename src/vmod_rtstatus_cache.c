@@ -54,11 +54,16 @@ vmod_rtstatus(const struct vrt_ctx *ctx, VCL_REAL delta)
 	struct VSM_data *vd;
 	unsigned u;
 
+	if (delta < 1 || delta > 60) {
+		VSLb(ctx->vsl, SLT_VCL_Error, "Delta has to be between"
+		    "1 and 60 seconds");
+		return "{}";
+	}
 	vd = VSM_New();
 	if (VSM_Open(vd)) {
-	    VSLb(ctx->vsl, SLT_VCL_Error, "Can't open VSM");
-	    VSM_Delete(vd);
-	    return "{}";
+		VSLb(ctx->vsl, SLT_VCL_Error, "Can't open VSM");
+		VSM_Delete(vd);
+		return "{}";
 	}
 	u =  WS_Reserve(ctx->ws, 0);
 	iter.vsb = VSB_new(NULL, ctx->ws->f, u, VSB_AUTOEXTEND);
