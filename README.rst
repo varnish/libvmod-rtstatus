@@ -25,8 +25,8 @@ import rtstatus;
 DESCRIPTION
 ===========
 
-A vmod that lets you query your Varnish server for a JSON object the
-counters. With the accompanied VCL code,
+A vmod that lets you query your Varnish server for a JSON object containing
+counters.
 
 visiting the URL /rtstatus.json on the Varnish server will produce an
 application/json response of the following format::
@@ -62,6 +62,8 @@ rtstatus
 Prototype::
 
          rtstatus(REAL delta)
+	 *delta* is the interval of seconds used for hitrate and load calculations.
+	 It has to be > 0 and < 60 seconds.
 
 Return value
 	STRING
