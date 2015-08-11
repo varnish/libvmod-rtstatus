@@ -1,22 +1,24 @@
 #include "cache/cache.h"
-#include "vapi/vsm.h"
-#include "vcl.h"
-#include "cache/cache_backend.h"
+
 #include "vmod_rtstatus.h"
+#include "vcl.h"
+#include "vrt.h"
+
 
 int
 backend(struct iter_priv *iter)
 {
-	const struct vrt_ctx *ctx = iter->cpy_ctx;
+/*	const struct vrt_ctx *ctx = iter->cpy_ctx;
 	int i;
-
+struct backend *be;
 	VSB_cat(iter->vsb, "\t\"backend\": [");
-	for (i = 1; i < iter->cpy_ctx->vcl->ndirector; ++i) {
+
+	for (i = 1; i < iter->cpy_ctx->vcl->backend_list; ++i) {
 		CHECK_OBJ_NOTNULL(ctx->vcl->director[i], DIRECTOR_MAGIC);
 		if (strcmp("simple", ctx->vcl->director[i]->name) == 0) {
 			char buf[1024];
 			int j, healthy;
-			healthy = VDI_Healthy(ctx->vcl->director[i]);
+			healthy = VDI_Healthy(ctx->vcl->director[i], vrt_ctx->bo);
 			j = snprintf(buf, sizeof buf, "{\"director_name\" :"
 			    " \"%s\" , \"name\":\"%s\", \"value\": \"%s\"}",
 			    ctx->vcl->director[i]->name,
@@ -29,7 +31,7 @@ backend(struct iter_priv *iter)
 			}
 		}
 	}
-	VSB_cat(iter->vsb, "],\n");
+	VSB_cat(iter->vsb, "],\n");*/
 	return(0);
 }
 

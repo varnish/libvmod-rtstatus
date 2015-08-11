@@ -4,8 +4,11 @@
 #include <math.h>
 #include <time.h>
 
-#include "vapi/vsc.h"
 #include "vmod_rtstatus.h"
+#include "vapi/vsc.h"
+#include "vrt.h"
+
+
 uint64_t  beresp_hdr, beresp_body;
 uint64_t  bereq_hdr, bereq_body;
 static struct hitrate hitrate;

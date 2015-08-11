@@ -1,4 +1,6 @@
 #include "cache/cache.h"
+#include "vrt.h"
+
 #include "vmod_rtstatus.h"
 #include "vmod_html.h"
 
