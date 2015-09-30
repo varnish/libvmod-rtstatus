@@ -7,40 +7,21 @@
 #include "vmod_rtstatus.h"
 #include "vapi/vsc.h"
 #include "vrt.h"
-
-
-uint64_t  beresp_hdr, beresp_body;
-uint64_t  bereq_hdr, bereq_body;
+#include "vtim.h"
+#include "vcl.h"
 static struct hitrate hitrate;
 static struct load load;
-int n_be, cont;
 
-
-double
-VTIM_mono(void)
-{
-#ifdef HAVE_GETHRTIME
-        return (gethrtime() * 1e-9);
-#elif  HAVE_CLOCK_GETTIME
-        struct timespec ts;
-
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        return (ts.tv_sec + 1e-9 * ts.tv_nsec);
-#else
-        struct timeval tv;
-
-        gettimeofday(&tv, NULL);
-        return (tv.tv_sec + 1e-6 * tv.tv_usec);
-#endif
-}
 
 int
-init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
+event_function(const struct vrt_ctx *ctx, struct vmod_priv *priv,
+    enum vcl_event_e e)
 {
 	memset(&hitrate, 0, sizeof(struct hitrate));
 	memset(&load, 0, sizeof(struct load));
 	beresp_hdr = beresp_body = 0;
 	bereq_hdr = bereq_body = 0;
+	be_happy = 0;
 	n_be = 0;
 	cont = 0;
 	return (0);
@@ -165,13 +146,18 @@ creepy_math(void *priv, const struct VSC_point *const pt)
 		}
 	}
 	if (!strcmp(sec->fantom->type, "VBE")) {
+	if(!strcmp(pt->desc->name, "happy")) {
+		be_happy = val;
+	}
 		if(!strcmp(pt->desc->name, "bereq_hdrbytes"))
 			bereq_hdr = val;
 		if(!strcmp(pt->desc->name, "bereq_bodybytes")) {
 			bereq_body = val;
-			VSB_cat(iter->vsb, "{\"ident\":\"");
+			VSB_cat(iter->vsb, "{\"server_name\":\"");
 			VSB_cat(iter->vsb, pt->section->fantom->ident);
-			VSB_printf(iter->vsb,"\", \"bereq_tot\": %" PRIu64 ",",
+			VSB_printf(iter->vsb,"\", \"happy\": %" PRIu64,
+			    be_happy);
+			VSB_printf(iter->vsb,", \"bereq_tot\": %" PRIu64 ",",
 			    bereq_body + bereq_hdr);
 		}
 
@@ -198,8 +184,7 @@ run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
 	VSB_cat(iter->vsb, "{\n");
 	rate(iter, vd);
 	general_info(iter);
-	backend(iter);
-	VSB_cat(iter->vsb, "\t\"be_bytes\": [");
+	VSB_cat(iter->vsb, "\t\"be_info\": [");
 	(void)VSC_Iter(vd, NULL, creepy_math, iter);
 	VSB_cat(iter->vsb, "],\n");
 	cont = 0;
