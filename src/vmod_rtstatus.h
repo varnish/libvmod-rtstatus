@@ -28,6 +28,12 @@ struct load {
 	struct counter rl;         /* rl stands for reqload */
 };
 
+uint64_t  beresp_hdr, beresp_body;
+uint64_t  bereq_hdr, bereq_body;
+uint64_t be_happy;
+
+int n_be, cont;
+
 int run_subroutine(struct iter_priv *iter, struct VSM_data *vd);
 int general_info(struct iter_priv *iter);
-int backend(struct iter_priv *iter);
+

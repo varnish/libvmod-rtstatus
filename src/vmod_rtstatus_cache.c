@@ -6,36 +6,6 @@
 
 
 int
-backend(struct iter_priv *iter)
-{
-/*	const struct vrt_ctx *ctx = iter->cpy_ctx;
-	int i;
-struct backend *be;
-	VSB_cat(iter->vsb, "\t\"backend\": [");
-
-	for (i = 1; i < iter->cpy_ctx->vcl->backend_list; ++i) {
-		CHECK_OBJ_NOTNULL(ctx->vcl->director[i], DIRECTOR_MAGIC);
-		if (strcmp("simple", ctx->vcl->director[i]->name) == 0) {
-			char buf[1024];
-			int j, healthy;
-			healthy = VDI_Healthy(ctx->vcl->director[i], vrt_ctx->bo);
-			j = snprintf(buf, sizeof buf, "{\"director_name\" :"
-			    " \"%s\" , \"name\":\"%s\", \"value\": \"%s\"}",
-			    ctx->vcl->director[i]->name,
-			    ctx->vcl->director[i]->vcl_name,
-			    healthy ? "healthy" : "sick");
-			assert(j >= 0);
-			VSB_cat(iter->vsb, buf);
-			if (i < (ctx->vcl->ndirector - 1)) {
-			    VSB_cat(iter->vsb, ",\n\t\t");
-			}
-		}
-	}
-	VSB_cat(iter->vsb, "],\n");*/
-	return(0);
-}
-
-int
 general_info(struct iter_priv *iter)
 {
 	static char vrt_hostname[255] = "";
