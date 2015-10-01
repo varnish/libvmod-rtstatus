@@ -4,7 +4,6 @@
 #include <math.h>
 #include <time.h>
 
-#include "vtim.h"
 #include "vapi/vsc.h"
 #include "vmod_rtstatus.h"
 
@@ -13,6 +12,24 @@ uint64_t  bereq_hdr, bereq_body;
 static struct hitrate hitrate;
 static struct load load;
 int n_be, cont;
+
+double
+VTIM_mono(void)
+{
+#ifdef HAVE_GETHRTIME
+        return (gethrtime() * 1e-9);
+#elif  HAVE_CLOCK_GETTIME
+        struct timespec ts;
+
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        return (ts.tv_sec + 1e-9 * ts.tv_nsec);
+#else
+        struct timeval tv;
+
+       gettimeofday(&tv, NULL);
+        return (tv.tv_sec + 1e-6 * tv.tv_usec);
+#endif
+}
 
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
