@@ -53,17 +53,17 @@ vmod_rtstatus(const struct vrt_ctx *ctx, VCL_REAL delta)
 	struct iter_priv iter = { 0 };
 	struct VSM_data *vd;
 
-
 	if (delta < 1 || delta > 60) {
 		VSLb(ctx->vsl, SLT_VCL_Error, "Delta has to be between"
 		    "1 and 60 seconds");
+		return "{}";
 
 	}
 	vd = VSM_New();
 	if (VSM_Open(vd)) {
 		VSLb(ctx->vsl, SLT_VCL_Error, "Can't open VSM");
 		VSM_Delete(vd);
-
+		return "{}";
 	}
 	iter.vsb = ctx->req->synth_body;
 	iter.cpy_ctx = ctx;
