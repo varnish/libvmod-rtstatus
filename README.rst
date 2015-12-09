@@ -22,7 +22,7 @@ DESCRIPTION
 A vmod that lets you query your Varnish server for a JSON object containing
 counters.
 
-visiting the URL /rtstatus.json on the Varnish server will produce an
+Visiting the URL ``/rtstatus.json`` on the Varnish server will produce an
 application/json response of the following format::
 
     {
@@ -41,7 +41,7 @@ application/json response of the following format::
 	"VBE.server1(192.168.0.10,,8081).bereq_hdrbytes": {"type": "VBE", "ident": "server1(192.168.0.10,,8081)", "descr": "Request header bytes", "value": 0},
     }
 
-visiting the URL /rtstatus on the Varnish server will produce an
+Visiting the URL ``/rtstatus`` on the Varnish server will produce an
 application/javascript response of the following format:
 
 .. image:: varnishstatus.png
@@ -97,7 +97,7 @@ In your VCL you could then use this vmod along the following lines::
 			return(synth(800, "OK"));
 		}
 	}
-	sub vcl_synth {	
+	sub vcl_synth {
 		if (resp.status == 700){
 			set resp.status = 200;
 			set resp.http.Content-Type = "text/plain; charset=utf-8";
