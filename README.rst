@@ -8,8 +8,8 @@ Varnish Real-Time Status Module
 -------------------------------
 
 :Author: Arianna Aondio
-:Date: 2014-10-31
-:Version: 1.0
+:Date: 2015-12-09
+:Version: 1.1.1
 
 SYNOPSIS
 ========
@@ -112,10 +112,3 @@ In your VCL you could then use this vmod along the following lines::
 			}
 	}
 
-COPYRIGHT
-=========
-
-This document is licensed under the same license as the
-libvmod-rtstatus project. See LICENSE for details.
-
-* Copyright (c) 2015 Varnish Software
