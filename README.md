@@ -13,7 +13,7 @@
 import rtstatus;
 ```
 
-####DESCRIPTION
+####Description
 
 A vmod that lets you query your Varnish server for a JSON object containing
 counters.
@@ -50,7 +50,6 @@ application/javascript response of the following format:
 |---	|---	|---	|
 |  rtstatus(REAL delta) 	|   string	|  *delta* is the interval of seconds used for hitrate and load calculations. It has to be > 0 and < 60 seconds. 	|
 | html()  	|   string	|   	|
-|   	|   	|   	|
 
 
 ####Installation
