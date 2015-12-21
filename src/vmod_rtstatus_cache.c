@@ -24,7 +24,6 @@ vmod_rtstatus(const struct vrt_ctx *ctx, VCL_REAL delta)
 {
 	struct iter_priv iter = { 0 };
 	struct VSM_data *vd;
-	unsigned u;
 
 	if (delta < 1 || delta > 60) {
 		VSLb(ctx->vsl, SLT_VCL_Error, "Delta has to be between"
@@ -37,20 +36,10 @@ vmod_rtstatus(const struct vrt_ctx *ctx, VCL_REAL delta)
 		VSM_Delete(vd);
 		return "{}";
 	}
-	u =  WS_Reserve(ctx->ws, 0);
-	iter.vsb = VSB_new(NULL, ctx->ws->f, u, VSB_AUTOEXTEND);
+	iter.vsb = ctx->specific;
 	iter.cpy_ctx = ctx;
        	iter.jp = 1;
 	iter.delta = delta;
 	run_subroutine(&iter, vd);
-	VSB_finish(iter.vsb);
-	if (VSB_error(iter.vsb)) {
-	    VSLb(ctx->vsl, SLT_VCL_Error, "VSB error");
-	    VSM_Delete(vd);
-	    WS_Release(ctx->ws, VSB_len(iter.vsb) + 1);
-	    return "{}";
-	}
-	VSM_Delete(vd);
-	WS_Release(ctx->ws, VSB_len(iter.vsb) + 1);
-	return(iter.vsb->s_buf);
+	return "";
 }
