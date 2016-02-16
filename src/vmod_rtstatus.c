@@ -91,10 +91,10 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
 	VSB_printf(iter->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
-	VSB_printf(iter->vsb, "\t\"uptime_sec\": %.2f,\n", (double)up);
-	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", hitrate.hr.acc * 100);
-	VSB_printf(iter->vsb, "\t\"load\": %.2f,\n", load.rl.acc);
-	VSB_printf(iter->vsb, "\t\"delta\": %.2f,\n", iter->delta);
+	VSB_printf(iter->vsb, "\t\"uptime_sec\": \"%.2f\",\n", (double)up);
+	VSB_printf(iter->vsb, "\t\"hitrate\": \"%.2f\",\n", hitrate.hr.acc * 100);
+	VSB_printf(iter->vsb, "\t\"load\": \"%.2f\",\n", load.rl.acc);
+	VSB_printf(iter->vsb, "\t\"delta\": \"%.2f\",\n", iter->delta);
 }
 
 int
