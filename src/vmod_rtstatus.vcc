@@ -1,4 +1,4 @@
 $Module rtstatus 3 rtstatus VMOD
-$Event event_function
+$Event init_function
 $Function STRING rtstatus(REAL delta)
 $Function STRING html()
