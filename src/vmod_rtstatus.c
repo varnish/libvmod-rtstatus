@@ -9,11 +9,11 @@
 #include "vrt.h"
 #include "vtim.h"
 #include "vcl.h"
-static struct hitrate hitrate;
-static struct load load;
+//static struct hitrate hitrate;
+//static struct load load;
 
 
-int
+/*int
 event_function(const struct vrt_ctx *ctx, struct vmod_priv *priv,
     enum vcl_event_e e)
 {
@@ -25,7 +25,7 @@ event_function(const struct vrt_ctx *ctx, struct vmod_priv *priv,
 	n_be = 0;
 	cont = 0;
 	return (0);
-}
+}*/
 
 static void
 update_counter(struct counter *counter, double val)
@@ -36,7 +36,7 @@ update_counter(struct counter *counter, double val)
 }
 
 void
-rate(struct iter_priv *iter, struct VSM_data *vd)
+rate(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 {
 	double hr, mr, ratio, tv, dt, reqload;
 	struct VSC_C_main *VSC_C_main;
@@ -72,19 +72,19 @@ rate(struct iter_priv *iter, struct VSM_data *vd)
 	update_counter(&hitrate.hr, ratio);
 	update_counter(&load.rl, reqload);
 
-	VSB_printf(iter->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
+	VSB_printf(rtstatus->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
-	VSB_printf(iter->vsb, "\t\"uptime_sec\": %.2f,\n", (double)up);
-	VSB_printf(iter->vsb, "\t\"hitrate\": %.2f,\n", hitrate.hr.acc * 100);
-	VSB_printf(iter->vsb, "\t\"load\": %.2f,\n", load.rl.acc);
-	VSB_printf(iter->vsb, "\t\"delta\": %.2f,\n", iter->delta);
+	VSB_printf(rtstatus->vsb, "\t\"uptime_sec\": %.2f,\n", (double)up);
+	VSB_printf(rtstatus->vsb, "\t\"hitrate\": %.2f,\n", hitrate.hr.acc * 100);
+	VSB_printf(rtstatus->vsb, "\t\"load\": %.2f,\n", load.rl.acc);
+	VSB_printf(rtstatus->vsb, "\t\"delta\": %.2f,\n", rtstatus->delta);
 }
 
 int
 json_status(void *priv, const struct VSC_point *const pt)
 {
-	struct iter_priv *iter = priv;
+	struct rtstatus_priv *rtstatus = priv;
 	const struct VSC_section *sec;
 	uint64_t val;
 
@@ -94,44 +94,44 @@ json_status(void *priv, const struct VSC_point *const pt)
 	val = *(const volatile uint64_t *)pt->ptr;
 	sec = pt->section;
 
-	if (iter->jp)
-		iter->jp = 0;
+	if (rtstatus->jp)
+		rtstatus->jp = 0;
 	else
-		VSB_cat(iter->vsb, ",\n");
-		VSB_cat(iter->vsb, "\t\"");
+		VSB_cat(rtstatus->vsb, ",\n");
+		VSB_cat(rtstatus->vsb, "\t\"");
 	if (strcmp(sec->fantom->type, "")) {
-		VSB_cat(iter->vsb, sec->fantom->type);
-		VSB_cat(iter->vsb, ".");
+		VSB_cat(rtstatus->vsb, sec->fantom->type);
+		VSB_cat(rtstatus->vsb, ".");
 	}
 	if (strcmp(sec->fantom->ident, "")) {
-		VSB_cat(iter->vsb, sec->fantom->ident);
-		VSB_cat(iter->vsb, ".");
+		VSB_cat(rtstatus->vsb, sec->fantom->ident);
+		VSB_cat(rtstatus->vsb, ".");
 	}
-	VSB_cat(iter->vsb, pt->desc->name);
-	VSB_cat(iter->vsb, "\": {");
+	VSB_cat(rtstatus->vsb, pt->desc->name);
+	VSB_cat(rtstatus->vsb, "\": {");
 	if (strcmp(sec->fantom->type, "")) {
-		VSB_cat(iter->vsb, "\"type\": \"");
-		VSB_cat(iter->vsb, sec->fantom->type);
-		VSB_cat(iter->vsb, "\", ");
+		VSB_cat(rtstatus->vsb, "\"type\": \"");
+		VSB_cat(rtstatus->vsb, sec->fantom->type);
+		VSB_cat(rtstatus->vsb, "\", ");
 	}
 	if (strcmp(sec->fantom->ident, "")) {
-		VSB_cat(iter->vsb, "\"ident\": \"");
-		VSB_cat(iter->vsb, sec->fantom->ident);
-		VSB_cat(iter->vsb, "\", ");
+		VSB_cat(rtstatus->vsb, "\"ident\": \"");
+		VSB_cat(rtstatus->vsb, sec->fantom->ident);
+		VSB_cat(rtstatus->vsb, "\", ");
 	}
-	VSB_cat(iter->vsb, "\"descr\": \"");
-	VSB_cat(iter->vsb, pt->desc->sdesc);
-	VSB_cat(iter->vsb, "\", ");
-	VSB_printf(iter->vsb,"\"value\": %" PRIu64 "}", val);
-	if (iter->jp)
-		VSB_cat(iter->vsb, "\n");
+	VSB_cat(rtstatus->vsb, "\"descr\": \"");
+	VSB_cat(rtstatus->vsb, pt->desc->sdesc);
+	VSB_cat(rtstatus->vsb, "\", ");
+	VSB_printf(rtstatus->vsb,"\"value\": %" PRIu64 "}", val);
+	if (rtstatus->jp)
+		VSB_cat(rtstatus->vsb, "\n");
 	return(0);
 }
 
 int
 creepy_math(void *priv, const struct VSC_point *const pt)
 {
-	struct iter_priv *iter = priv;
+	struct rtstatus_priv *rtstatus = priv;
 	const struct VSC_section *sec;
 	uint64_t val;
 
@@ -153,11 +153,11 @@ creepy_math(void *priv, const struct VSC_point *const pt)
 			bereq_hdr = val;
 		if(!strcmp(pt->desc->name, "bereq_bodybytes")) {
 			bereq_body = val;
-			VSB_cat(iter->vsb, "{\"server_name\":\"");
-			VSB_cat(iter->vsb, pt->section->fantom->ident);
-			VSB_printf(iter->vsb,"\", \"happy\": %" PRIu64,
+			VSB_cat(rtstatus->vsb, "{\"server_name\":\"");
+			VSB_cat(rtstatus->vsb, pt->section->fantom->ident);
+			VSB_printf(rtstatus->vsb,"\", \"happy\": %" PRIu64,
 			    be_happy);
-			VSB_printf(iter->vsb,", \"bereq_tot\": %" PRIu64 ",",
+			VSB_printf(rtstatus->vsb,", \"bereq_tot\": %" PRIu64 ",",
 			    bereq_body + bereq_hdr);
 		}
 
@@ -165,10 +165,10 @@ creepy_math(void *priv, const struct VSC_point *const pt)
 			beresp_hdr = val;
 		if(!strcmp(pt->desc->name, "beresp_bodybytes")) {
 			beresp_body = val;
-			VSB_printf(iter->vsb,"\"beresp_tot\": %" PRIu64 "}",
+			VSB_printf(rtstatus->vsb,"\"beresp_tot\": %" PRIu64 "}",
 			    beresp_body + beresp_hdr);
 			if(cont < (n_be -1)) {
-				VSB_cat(iter->vsb, ",\n\t\t");
+				VSB_cat(rtstatus->vsb, ",\n\t\t");
 				cont++;
 			}
 		}
@@ -177,19 +177,19 @@ creepy_math(void *priv, const struct VSC_point *const pt)
 }
 
 int
-run_subroutine(struct iter_priv *iter, struct VSM_data *vd)
+run_subroutine(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 {
-	hitrate.hr.nmax = iter->delta;
-	load.rl.nmax = iter->delta;
-	VSB_cat(iter->vsb, "{\n");
-	rate(iter, vd);
-	general_info(iter);
-	VSB_cat(iter->vsb, "\t\"be_info\": [");
-	(void)VSC_Iter(vd, NULL, creepy_math, iter);
-	VSB_cat(iter->vsb, "],\n");
+	hitrate.hr.nmax = rtstatus->delta;
+	load.rl.nmax = rtstatus->delta;
+	VSB_cat(rtstatus->vsb, "{\n");
+	rate(rtstatus, vd);
+	general_info(rtstatus);
+	VSB_cat(rtstatus->vsb, "\t\"be_info\": [");
+	(void)VSC_Iter(vd, NULL, creepy_math, rtstatus);
+	VSB_cat(rtstatus->vsb, "],\n");
 	cont = 0;
-	(void)VSC_Iter(vd, NULL, json_status, iter);
-	VSB_cat(iter->vsb, "\n}\n");
+	(void)VSC_Iter(vd, NULL, json_status, rtstatus);
+	VSB_cat(rtstatus->vsb, "\n}\n");
 	return(0);
 }
 
