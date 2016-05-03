@@ -10,16 +10,6 @@ init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
 	if (e != VCL_EVENT_LOAD)
 		return (0);
 
-/*        memset(&hitrate, 0, sizeof(struct hitrate));
-        memset(&load, 0, sizeof(struct load));
-	if (VSC_C_main != NULL) {
-                hitrate.hit = VSC_C_main->cache_hit;
-                hitrate.miss = VSC_C_main->cache_miss;
-        }
-        hitrate.hr_10.nmax = 10;
-        hitrate.hr_100.nmax = 100;
-        hitrate.hr_1000.nmax = 1000;*/
-
         beresp_hdr = beresp_body = 0;
         bereq_hdr = bereq_body = 0;
         be_happy = 0;
@@ -47,12 +37,6 @@ vmod_rtstatus(VRT_CTX, VCL_REAL delta)
 	struct rtstatus_priv rtstatus = { 0 };
 	struct VSM_data *vd;
 
-/*	if (delta < 1 || delta > 60) {
-		VSLb(ctx->vsl, SLT_VCL_Error, "Delta has to be between"
-		    "1 and 60 seconds");
-		return "{ \"error\": \"Check Varnishlog for more details\" }";
-	}*/
-
 	vd = VSM_New();
 	AN(vd);
 
@@ -64,7 +48,6 @@ vmod_rtstatus(VRT_CTX, VCL_REAL delta)
 
 	rtstatus.vsb = ctx->specific;
 	rtstatus.cpy_ctx = ctx;
-//	rtstatus.delta = delta;
        	rtstatus.jp = 1;
 	collect_info(&rtstatus, vd);
 	return "";
