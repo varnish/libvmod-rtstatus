@@ -9,7 +9,7 @@ libvmod_rtstatus_la_LIBADD = -lvarnishapi
 libvmod_rtstatus_la_SOURCES = \
 	vmod_rtstatus.h \
 	vmod_rtstatus.c \
-	vmod_rtstatus_cache.c \
+	vmod_rtstatus_main.c \
 	HTML/vmod_html.h \
 	HTML/vmod_html.c
 
