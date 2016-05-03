@@ -9,36 +9,11 @@
 #include "vrt.h"
 #include "vtim.h"
 #include "vcl.h"
-//static struct hitrate hitrate;
-//static struct load load;
-
-
-/*int
-event_function(const struct vrt_ctx *ctx, struct vmod_priv *priv,
-    enum vcl_event_e e)
-{
-	memset(&hitrate, 0, sizeof(struct hitrate));
-	memset(&load, 0, sizeof(struct load));
-	beresp_hdr = beresp_body = 0;
-	bereq_hdr = bereq_body = 0;
-	be_happy = 0;
-	n_be = 0;
-	cont = 0;
-	return (0);
-}*/
-
-static void
-update_counter(struct counter *counter, double val)
-{
-        if (counter->n < counter->nmax)
-                counter->n++;
-        counter->acc += (val - counter->acc) / (double)counter->n;
-}
 
 void
 rate(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 {
-	double hr, mr, ratio, tv, dt, reqload;
+	double ratio;
 	struct VSC_C_main *VSC_C_main;
 	uint64_t hit, miss;
 	time_t up;
@@ -48,37 +23,23 @@ rate(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
         if (VSC_C_main == NULL)
                 return;
 
-        tv = VTIM_mono();
-        dt = tv - hitrate.tm;
-        hitrate.tm = tv;
-
         hit = VSC_C_main->cache_hit;
         miss = VSC_C_main->cache_miss;
-        hr = (hit - hitrate.hit) / dt;
-        mr = (miss - hitrate.miss) / dt;
-        hitrate.hit = hit;
-        hitrate.miss = miss;
 
-        if (hr + mr != 0)
-                ratio = hr / (hr + mr);
+        if (hit + miss != 0)
+                ratio = (double)hit / (hit + miss);
         else
                 ratio = 0;
 
 	up = VSC_C_main->uptime;
 	req = VSC_C_main->client_req;
-	reqload  =  ((req - load.req) / dt);
-	load.req = req;
-
-	update_counter(&hitrate.hr, ratio);
-	update_counter(&load.rl, reqload);
 
 	VSB_printf(rtstatus->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
 	VSB_printf(rtstatus->vsb, "\t\"uptime_sec\": %.2f,\n", (double)up);
-	VSB_printf(rtstatus->vsb, "\t\"hitrate\": %.2f,\n", hitrate.hr.acc * 100);
-	VSB_printf(rtstatus->vsb, "\t\"load\": %.2f,\n", load.rl.acc);
-	VSB_printf(rtstatus->vsb, "\t\"delta\": %.2f,\n", rtstatus->delta);
+	VSB_printf(rtstatus->vsb, "\t\"hitrate\": %.2f,\n", ratio * 100);
+	VSB_printf(rtstatus->vsb, "\t\"load\": %.2f,\n", (double)req / up);
 }
 
 int
@@ -175,12 +136,9 @@ creepy_math(void *priv, const struct VSC_point *const pt)
 	}
 	return(0);
 }
-
 int
-run_subroutine(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
+collect_info(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 {
-	hitrate.hr.nmax = rtstatus->delta;
-	load.rl.nmax = rtstatus->delta;
 	VSB_cat(rtstatus->vsb, "{\n");
 	rate(rtstatus, vd);
 	general_info(rtstatus);
