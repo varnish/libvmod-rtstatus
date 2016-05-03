@@ -43,7 +43,7 @@ rate(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 }
 
 int
-json_status(void *priv, const struct VSC_point *const pt)
+json_stats(void *priv, const struct VSC_point *const pt)
 {
 	struct rtstatus_priv *rtstatus = priv;
 	const struct VSC_section *sec;
@@ -90,7 +90,7 @@ json_status(void *priv, const struct VSC_point *const pt)
 }
 
 int
-creepy_math(void *priv, const struct VSC_point *const pt)
+be_info(void *priv, const struct VSC_point *const pt)
 {
 	struct rtstatus_priv *rtstatus = priv;
 	const struct VSC_section *sec;
@@ -101,15 +101,15 @@ creepy_math(void *priv, const struct VSC_point *const pt)
 
 	val = *(const volatile uint64_t *)pt->ptr;
 	sec = pt->section;
-	if(!strcmp(sec->fantom->type,"MAIN")){
-		if(!strcmp(pt->desc->name, "n_backend")){
+
+	if (!strcmp(sec->fantom->type,"MAIN")) {
+		if (!strcmp(pt->desc->name, "n_backend"))
 			n_be = (int)val;
-		}
 	}
+
 	if (!strcmp(sec->fantom->type, "VBE")) {
-	if(!strcmp(pt->desc->name, "happy")) {
-		be_happy = val;
-	}
+		if (!strcmp(pt->desc->name, "happy"))
+			be_happy = val;
 		if(!strcmp(pt->desc->name, "bereq_hdrbytes"))
 			bereq_hdr = val;
 		if(!strcmp(pt->desc->name, "bereq_bodybytes")) {
@@ -121,19 +121,20 @@ creepy_math(void *priv, const struct VSC_point *const pt)
 			VSB_printf(rtstatus->vsb,", \"bereq_tot\": %" PRIu64 ",",
 			    bereq_body + bereq_hdr);
 		}
-
 		if(!strcmp(pt->desc->name, "beresp_hdrbytes"))
 			beresp_hdr = val;
 		if(!strcmp(pt->desc->name, "beresp_bodybytes")) {
 			beresp_body = val;
 			VSB_printf(rtstatus->vsb,"\"beresp_tot\": %" PRIu64 "}",
 			    beresp_body + beresp_hdr);
+
 			if(cont < (n_be -1)) {
 				VSB_cat(rtstatus->vsb, ",\n\t\t");
 				cont++;
 			}
 		}
 	}
+
 	return(0);
 }
 int
@@ -143,11 +144,12 @@ collect_info(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 	rate(rtstatus, vd);
 	general_info(rtstatus);
 	VSB_cat(rtstatus->vsb, "\t\"be_info\": [");
-	(void)VSC_Iter(vd, NULL, creepy_math, rtstatus);
+	(void)VSC_Iter(vd, NULL, be_info, rtstatus);
 	VSB_cat(rtstatus->vsb, "],\n");
 	cont = 0;
-	(void)VSC_Iter(vd, NULL, json_status, rtstatus);
+	(void)VSC_Iter(vd, NULL, json_stats, rtstatus);
 	VSB_cat(rtstatus->vsb, "\n}\n");
+
 	return(0);
 }
 
