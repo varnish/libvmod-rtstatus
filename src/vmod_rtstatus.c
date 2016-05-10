@@ -114,19 +114,30 @@ be_info(void *priv, const struct VSC_point *const pt)
 			bereq_hdr = val;
 		if(!strcmp(pt->desc->name, "bereq_bodybytes")) {
 			bereq_body = val;
-			VSB_cat(rtstatus->vsb, "{\"server_name\":\"");
+			VSB_cat(rtstatus->vsb, "\t{\"server_name\":\"");
 			VSB_cat(rtstatus->vsb, pt->section->fantom->ident);
 			VSB_printf(rtstatus->vsb,"\", \"happy\": %" PRIu64,
 			    be_happy);
 			VSB_printf(rtstatus->vsb,", \"bereq_tot\": %" PRIu64 ",",
 			    bereq_body + bereq_hdr);
 		}
-		if(!strcmp(pt->desc->name, "beresp_hdrbytes"))
-			beresp_hdr = val;
-		if(!strcmp(pt->desc->name, "beresp_bodybytes")) {
-			beresp_body = val;
-			VSB_printf(rtstatus->vsb,"\"beresp_tot\": %" PRIu64 "}",
-			    beresp_body + beresp_hdr);
+
+                if(!strcmp(pt->desc->name, "beresp_hdrbytes"))
+		  beresp_hdr = val;
+                if(!strcmp(pt->desc->name, "beresp_bodybytes")) {
+		  beresp_body = val;
+		  VSB_printf(rtstatus->vsb,"\"beresp_tot\": %" PRIu64 ",",
+			beresp_body + beresp_hdr);
+		}
+
+		if(!strcmp(pt->desc->name, "pipe_hdrbytes"))
+			VSB_printf(rtstatus->vsb,"\"pipe_hdrbytes\": %" PRIu64 ",", val);
+
+		if(!strcmp(pt->desc->name, "pipe_out"))
+			VSB_printf(rtstatus->vsb,"\"pipe_out\": %" PRIu64 ",", val);
+
+		if(!strcmp(pt->desc->name, "pipe_in")) {
+			VSB_printf(rtstatus->vsb,"\"pipe_in\": %" PRIu64 "}", val);
 
 			if(cont < (n_be -1)) {
 				VSB_cat(rtstatus->vsb, ",\n\t\t");
@@ -137,15 +148,16 @@ be_info(void *priv, const struct VSC_point *const pt)
 
 	return(0);
 }
+
 int
 collect_info(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 {
 	VSB_cat(rtstatus->vsb, "{\n");
 	rate(rtstatus, vd);
 	general_info(rtstatus);
-	VSB_cat(rtstatus->vsb, "\t\"be_info\": [");
+	VSB_cat(rtstatus->vsb, "\t\"be_info\":\n\t\t[\n\t\t");
 	(void)VSC_Iter(vd, NULL, be_info, rtstatus);
-	VSB_cat(rtstatus->vsb, "],\n");
+	VSB_cat(rtstatus->vsb, "\n\t\t],\n");
 	cont = 0;
 	(void)VSC_Iter(vd, NULL, json_stats, rtstatus);
 	VSB_cat(rtstatus->vsb, "\n}\n");
