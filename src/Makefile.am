@@ -19,10 +19,26 @@ nodist_libvmod_rtstatus_la_SOURCES = \
 
 vmod_rtstatus.lo: vcc_if.c vcc_if.h
 
+dist_man_MANS = vmod_rtstatus.3
+MAINTAINERCLEANFILES = $(dist_man_MANS)
+
 vcc_if.c: vcc_if.h
 
-vcc_if.h: @VMODTOOL@ $(top_srcdir)/src/vmod_rtstatus.vcc
+vcc_if.h vmod_rtstatus.man.rst: @VMODTOOL@ $(top_srcdir)/src/vmod_rtstatus.vcc
 	@VMODTOOL@ $(top_srcdir)/src/vmod_rtstatus.vcc
+
+
+vmod_rtstatus.3: vmod_rtstatus.man.rst
+
+%.1 %.2 %.3 %.4 %.5 %.6 %.7 %.8 %.9:
+if HAVE_RST2MAN
+	${RST2MAN} $< $@
+else
+	@echo "========================================"
+	@echo "You need rst2man installed to make dist"
+	@echo "========================================"
+	@false
+endif
 
 VMOD_TESTS = $(top_srcdir)/src/tests/*.vtc
 .PHONY: $(VMOD_TESTS)
@@ -41,4 +57,5 @@ CLEANFILES = \
 	$(builddir)/vcc_if.c \
 	$(builddir)/vcc_if.h \
 	$(builddir)/vmod_rtstatus.rst \
-	$(builddir)/vmod_rtstatus.man.rst
+	$(builddir)/vmod_rtstatus.man.rst \
+	$(dist_man_MANS)

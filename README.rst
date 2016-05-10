@@ -55,9 +55,7 @@ rtstatus
 
 Prototype::
 
-         rtstatus(REAL delta)
-	 *delta* is the interval of seconds used for hitrate and load calculations.
-	 It has to be > 0 and < 60 seconds.
+         rtstatus()
 
 Return value
 	STRING
