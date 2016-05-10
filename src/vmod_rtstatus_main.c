@@ -32,7 +32,7 @@ general_info(struct rtstatus_priv *rtstatus)
 }
 
 VCL_STRING
-vmod_rtstatus(VRT_CTX, VCL_REAL delta)
+vmod_rtstatus(VRT_CTX)
 {
 	struct rtstatus_priv rtstatus = { 0 };
 	struct VSM_data *vd;
