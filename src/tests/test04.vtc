@@ -15,7 +15,7 @@ varnish v1 -vcl+backend {
 	}
 	sub vcl_synth {
 		if (resp.status == 200) {
-			synthetic(rtstatus.rtstatus(1));
+			synthetic(rtstatus.rtstatus());
 			return(deliver);
 		}	
 	}
