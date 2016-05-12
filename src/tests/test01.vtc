@@ -1,63 +1,28 @@
-varnishtest "Test rtstatus vmod"
+varnishtest "Test rtstatus() can be just used in vcl_synth"
+
 server s1 {
         rxreq
-        txresp -body "012345\n"
-        accept
-        rxreq
-        txresp -body "012345\n"
-        accept
-        rxreq
-        txresp -body "012345\n"
-        accept
-        rxreq
-        txresp -body "012345\n"
-        accept
-        rxreq
-        txresp -body "012345\n"
-        accept
-        rxreq
-        txresp -body "012345\n"
+        txresp
 } -start
 
 varnish v1 -vcl+backend {
-        sub vcl_hit {
-               return (restart);
-        }
+	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
 
-        sub vcl_synth {
-                if (req.restarts == 2) {
-                        set resp.status = 200;
-                        set resp.reason = "restart=2";
-                } elsif (req.restarts > 2) {
-                        set resp.status = 501;
-                        set resp.reason = "restart>2";
-                } elsif (req.restarts < 2) {
-                        set resp.status = 500;
-                        set resp.reason = "restart<2";
-                }
-        }
+	sub vcl_deliver {
+		set resp.status = 200;
+		set resp.http.Content-Type = "text/plain; charset=utf-8";
+		set resp.http.x-rtstatus = rtstatus.rtstatus();
+		return (deliver);
+	}
 } -start
 
-varnish v1 -cliok "param.set max_restarts 2"
+logexpect l1 -v v1 -g raw {
+	expect * = Error "rtstatus() function is only allowed in vcl_synth"
+}
 
 client c1 {
-        txreq -url "/"
+        txreq -url "/rtstatus.json"
         rxresp
         expect resp.status == 200
-} -run
-
-varnish v1 -cliok "param.set max_restarts 3"
-
-client c1 {
-        txreq -url "/"
-        rxresp
-        expect resp.status == 501
-} -run
-
-varnish v1 -cliok "param.set max_restarts 1"
-
-client c1 {
-        txreq -url "/"
-        rxresp
-        expect resp.status == 500
+        expect resp.http.Content-Type == "text/plain; charset=utf-8"
 } -run

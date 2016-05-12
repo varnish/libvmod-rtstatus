@@ -110,9 +110,9 @@ be_info(void *priv, const struct VSC_point *const pt)
 	if (!strcmp(sec->fantom->type, "VBE")) {
 		if (!strcmp(pt->desc->name, "happy"))
 			be_happy = val;
-		if(!strcmp(pt->desc->name, "bereq_hdrbytes"))
+		if (!strcmp(pt->desc->name, "bereq_hdrbytes"))
 			bereq_hdr = val;
-		if(!strcmp(pt->desc->name, "bereq_bodybytes")) {
+		if (!strcmp(pt->desc->name, "bereq_bodybytes")) {
 			bereq_body = val;
 			VSB_cat(rtstatus->vsb, "\t{\"server_name\":\"");
 			VSB_cat(rtstatus->vsb, pt->section->fantom->ident);
@@ -122,24 +122,30 @@ be_info(void *priv, const struct VSC_point *const pt)
 			    bereq_body + bereq_hdr);
 		}
 
-                if(!strcmp(pt->desc->name, "beresp_hdrbytes"))
-		  beresp_hdr = val;
-                if(!strcmp(pt->desc->name, "beresp_bodybytes")) {
-		  beresp_body = val;
-		  VSB_printf(rtstatus->vsb,"\"beresp_tot\": %" PRIu64 ",",
-			beresp_body + beresp_hdr);
+                if (!strcmp(pt->desc->name, "beresp_hdrbytes"))
+			beresp_hdr = val;
+                if (!strcmp(pt->desc->name, "beresp_bodybytes")) {
+			beresp_body = val;
+			VSB_printf(rtstatus->vsb,"\"beresp_tot\": %" PRIu64 ",",
+			    beresp_body + beresp_hdr);
 		}
 
-		if(!strcmp(pt->desc->name, "pipe_hdrbytes"))
+		if (!strcmp(pt->desc->name, "pipe_hdrbytes"))
 			VSB_printf(rtstatus->vsb,"\"pipe_hdrbytes\": %" PRIu64 ",", val);
 
-		if(!strcmp(pt->desc->name, "pipe_out"))
+		if (!strcmp(pt->desc->name, "pipe_out"))
 			VSB_printf(rtstatus->vsb,"\"pipe_out\": %" PRIu64 ",", val);
 
-		if(!strcmp(pt->desc->name, "pipe_in")) {
-			VSB_printf(rtstatus->vsb,"\"pipe_in\": %" PRIu64 "}", val);
+                if (!strcmp(pt->desc->name, "pipe_in"))
+			VSB_printf(rtstatus->vsb,"\"pipe_in\": %" PRIu64 ",", val);
 
-			if(cont < (n_be -1)) {
+                if (!strcmp(pt->desc->name, "conn"))
+			VSB_printf(rtstatus->vsb,"\"conn\": %" PRIu64 ",", val);
+
+		if (!strcmp(pt->desc->name, "req")) {
+			VSB_printf(rtstatus->vsb,"\"req\": %" PRIu64 "}", val);
+
+			if (cont < (n_be -1)) {
 				VSB_cat(rtstatus->vsb, ",\n\t\t");
 				cont++;
 			}
