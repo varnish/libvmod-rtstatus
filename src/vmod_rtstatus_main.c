@@ -37,6 +37,11 @@ vmod_rtstatus(VRT_CTX)
 	struct rtstatus_priv rtstatus = { 0 };
 	struct VSM_data *vd;
 
+	if (ctx->method != VCL_MET_SYNTH) {
+		VSLb(ctx->vsl, SLT_VCL_Error, "rtstatus() can only be used in vcl_synth");
+		return "{ \"error\": \"Check Varnishlog for more details\" }";
+	}
+
 	vd = VSM_New();
 	AN(vd);
 
