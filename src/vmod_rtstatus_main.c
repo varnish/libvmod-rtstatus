@@ -55,5 +55,6 @@ vmod_rtstatus(VRT_CTX)
 	rtstatus.cpy_ctx = ctx;
        	rtstatus.jp = 1;
 	collect_info(&rtstatus, vd);
+	VSM_Delete(vd);
 	return "";
 }
