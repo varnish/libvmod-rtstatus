@@ -9,8 +9,3 @@ DISTCHECK_CONFIGURE_FLAGS = \
 EXTRA_DIST = README.rst LICENSE vmod-rtstatus.spec debian
 
 doc_DATA = README.rst LICENSE
-
-#dist_man_MANS = vmod_rtstatus.3
-#MAINTAINERCLEANFILES = $(dist_man_MANS)
-
-#vmod_rtstatus.3: src/vmod_rtstatus.man.rst
