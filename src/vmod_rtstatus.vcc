@@ -9,19 +9,20 @@ visiting the URL /rtstatus.json on the Varnish server will produce an applicatio
 response of the following format::
 
     {
-        "Uptime" : 0+00:09:38,
-        "hitrate": 0.00,
-        "load": 1,
-        "varnish_version" : "varnish-4.0.1 revision c6f20e4",
-        "server_id": "arianna-ThinkPad-X230",
-        "client_id": "127.0.0.1",
-        "backend": [{"director_name" : "simple" , "name":"default", "value": "healthy"},
-                {"director_name" : "simple" , "name":"server1", "value": "healthy"},
-                {"director_name" : "simple" , "name":"server2", "value": "healthy"}],
-        "MAIN.uptime": {"type": "MAIN", "descr": "Child process uptime", "value": 578},
-        "VBE.server1(192.168.0.10,,8081).vcls": {"type": "VBE", "ident": "server1(192.168.0.10,,8081)", "descr": "VCL references", "value": 1},
-        "VBE.server1(192.168.0.10,,8081).happy": {"type": "VBE", "ident": "server1(192.168.0.10,,8081)", "descr": "Happy health probes", "value": 0},
-        "VBE.server1(192.168.0.10,,8081).bereq_hdrbytes": {"type": "VBE", "ident": "server1(192.168.0.10,,8081)", "descr": "Request header bytes", "value": 0},
+	"uptime" : "0+16:12:58",
+	"uptime_sec": 58378.00,
+	"hitrate": 30.93,
+	"load": 2.73,
+	"varnish_version" : "varnish-plus-4.1.2r1 revision 4d86388",
+	"server_id": "ubuntu-14",
+	"be_info":
+		[
+			{"server_name":"boot.default", "happy": 0, "bereq_tot": 13585163,"beresp_tot": 290463715,"pipe_hdrbytes": 0,"pipe_out": 0,"pipe_in": 0,"conn": 82094,"req": 82094},
+			{"server_name":"boot.server1", "happy": 0, "bereq_tot": 0,"beresp_tot": 0,"pipe_hdrbytes": 0,"pipe_out": 0,"pipe_in": 0,"conn": 0,"req": 0},
+		]
+	"VBE.boot.default.happy": {"type": "VBE", "ident": "boot.default", "descr": "Happy health probes", "value": 0},
+	"VBE.boot.default.bereq_hdrbytes": {"type": "VBE", "ident": "boot.default", "descr": "Request header bytes", "value": 13585163},
+	"VBE.boot.default.bereq_bodybytes": {"type": "VBE", "ident": "boot.default", "descr": "Request body bytes", "value": 0},
     }
 
 visiting the URL /rtstatus on the Varnish server will produce an application/javascript response.
@@ -79,3 +80,96 @@ In your VCL you could then use this vmod along the following lines::
                         return (deliver);
                         }
         }
+
+
+NUMBERS
+=======
+
+Varnish version
+	Varnish version installed on your server.
+
+Varnish uptime
+	Child uptime.
+
+Hit ratio
+	Absolute hitrate ratio. It is evaluated as: (n_hit) / (n_hit + n_miss).
+	Note that uptime is not taken into considaration for this counter.
+
+Avg hitrate
+	Avarage hitrate since uptime. It is evaluated as: ((n_hit) / (n_hit + n_miss)) / uptime.
+
+Avg load
+	Avarage load since uptime. It is evaluated as: n_requests / uptime.
+
+
+
+Backend overview
+----------------
+
+Num
+	Total number of defined backends.
+
+Req
+	Backend requests made.
+
+Conn
+	Successful backend connections.
+
+Unhealthy
+	Backend connections not attempted.
+
+Busy
+	Too many connections to the same backend.
+
+Fail
+	Backend connections failures.
+
+Reuse
+	Reused backend connections.
+
+Recycle
+	Recycled backend connections.
+
+Retry
+	Retried backend connections.
+
+
+
+
+Backend details
+---------------
+
+Backend name
+	Backend name.
+
+Probe health
+	Health evaluated by probes.
+	If probe is not set the backend is marked as sick.
+
+Req KB/s
+	KBytes per second sent to the backend by Varnish.
+
+Requests
+	Total amount of bytes sent to the backend by Varnish.
+
+Resp KB/s
+	KBytes per second sent to Varnish by the backend.
+
+Responses
+	Total amount of bytes sent to Varnish by the backend.
+
+Pipe hdr
+	Total amount of piped header bytes. 
+
+Pipe out
+	Total amount of piped bytes to the backend. 
+
+Pipe in
+	Total amount of piped bytes from the backend. 
+
+Conn
+	Concurrent connections to backend.
+
+Req
+	Number of requests sent to the backend.	
+
