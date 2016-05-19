@@ -38,8 +38,9 @@ rate(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
 	VSB_printf(rtstatus->vsb, "\t\"uptime_sec\": %.2f,\n", (double)up);
-	VSB_printf(rtstatus->vsb, "\t\"hitrate\": %.2f,\n", ratio * 100);
-	VSB_printf(rtstatus->vsb, "\t\"load\": %.2f,\n", (double)req / up);
+        VSB_printf(rtstatus->vsb, "\t\"absolute_hitrate\": %.2f,\n", ratio * 100);
+	VSB_printf(rtstatus->vsb, "\t\"avg_hitrate\": %.2f,\n", (ratio * 100) / up);
+	VSB_printf(rtstatus->vsb, "\t\"avg_load\": %.2f,\n", (double)req / up);
 }
 
 int
@@ -109,15 +110,14 @@ be_info(void *priv, const struct VSC_point *const pt)
 
 	if (!strcmp(sec->fantom->type, "VBE")) {
 		if (!strcmp(pt->desc->name, "happy"))
-			be_happy = val;
+			be_happy = (val % 2);
 		if (!strcmp(pt->desc->name, "bereq_hdrbytes"))
 			bereq_hdr = val;
 		if (!strcmp(pt->desc->name, "bereq_bodybytes")) {
 			bereq_body = val;
 			VSB_cat(rtstatus->vsb, "\t{\"server_name\":\"");
 			VSB_cat(rtstatus->vsb, pt->section->fantom->ident);
-			VSB_printf(rtstatus->vsb,"\", \"happy\": %" PRIu64,
-			    be_happy);
+			VSB_printf(rtstatus->vsb,"\", \"happy\": \"%s\"" , be_happy ? "healthy" : "sick");
 			VSB_printf(rtstatus->vsb,", \"bereq_tot\": %" PRIu64 ",",
 			    bereq_body + bereq_hdr);
 		}
