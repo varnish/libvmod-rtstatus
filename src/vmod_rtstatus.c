@@ -60,7 +60,7 @@ json_stats(void *priv, const struct VSC_point *const pt)
 		rtstatus->jp = 0;
 	else
 		VSB_cat(rtstatus->vsb, ",\n");
-		VSB_cat(rtstatus->vsb, "\t\"");
+	VSB_cat(rtstatus->vsb, "\t\"");
 	if (strcmp(sec->fantom->type, "")) {
 		VSB_cat(rtstatus->vsb, sec->fantom->type);
 		VSB_cat(rtstatus->vsb, ".");

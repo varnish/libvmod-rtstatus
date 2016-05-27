@@ -3,6 +3,7 @@
 #include "vmod_rtstatus.h"
 #include "vcl.h"
 #include "vrt.h"
+#include "vrt_obj.h"
 
 int
 init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
@@ -45,7 +46,8 @@ vmod_rtstatus(VRT_CTX)
 	vd = VSM_New();
 	AN(vd);
 
-	if (VSM_Open(vd)) {
+	if (!VSM_n_Arg(vd, VRT_r_server_identity(ctx)) ||
+			VSM_Open(vd)) {
 		VSLb(ctx->vsl, SLT_VCL_Error, "Can't open VSM");
 		VSM_Delete(vd);
 		return "{ \"error\": \"Check Varnishlog for more details\" }";

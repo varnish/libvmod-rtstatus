@@ -1,0 +1,28 @@
+varnishtest "Primitive sanity check"
+
+server s1 {
+        rxreq
+        txresp
+} -start
+
+varnish v1 -vcl+backend {
+	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
+
+	sub vcl_recv {
+		if (req.url ~ "/rtstatus") {
+			return(synth(200, "OK"));
+		}
+	}
+	sub vcl_synth {
+		if (resp.status == 200) {
+			synthetic(rtstatus.rtstatus());
+			return(deliver);
+		}	
+	}
+} -start
+
+client c1 {
+        txreq -url "/rtstatus.json"
+        rxresp
+	expect resp.body ~ "MAIN.s_req"
+} -run
