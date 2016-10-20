@@ -7,6 +7,8 @@ Makefile.in
 *.la
 *~
 *.[1-9]
+*.sw[po]
+tags
 
 /aclocal.m4
 /autom4te.cache/
@@ -25,6 +27,11 @@ Makefile.in
 /missing
 /stamp-h1
 /m4/
+.dirstamp
 
 /src/vcc_if.c
 /src/vcc_if.h
+
+# Built
+src/vmod*.man.rst
+src/vmod*.rst
