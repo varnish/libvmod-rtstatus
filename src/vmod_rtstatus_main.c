@@ -20,26 +20,13 @@ init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
 }
 
 
-int
-general_info(struct rtstatus_priv *rtstatus)
-{
-	static char vrt_hostname[255] = "";
-	VSB_cat(rtstatus->vsb, "\t\"varnish_version\" : \"");
-	VSB_cat(rtstatus->vsb, VCS_version);
-	VSB_cat(rtstatus->vsb, "\",\n");
-	gethostname(vrt_hostname, sizeof(vrt_hostname));
-	VSB_cat(rtstatus->vsb, "\t\"server_id\": \"");
-	VSB_cat(rtstatus->vsb, vrt_hostname);
-	VSB_cat(rtstatus->vsb, "\",\n");
-	return(0);
-}
-
-
 VCL_STRING
 vmod_rtstatus(VRT_CTX)
 {
-	struct rtstatus_priv rtstatus = { 0 };
+	struct rtstatus_priv rtstatus;
 	struct VSM_data *vd;
+
+	INIT_OBJ(&rtstatus, VMOD_RTSTATUS_MAGIC);
 
 	if (ctx->method != VCL_MET_SYNTH) {
 		VSLb(ctx->vsl, SLT_VCL_Error, "rtstatus() can only be used in vcl_synth");
@@ -59,7 +46,9 @@ vmod_rtstatus(VRT_CTX)
 	rtstatus.vsb = ctx->specific;
 	rtstatus.cpy_ctx = ctx;
        	rtstatus.jp = 1;
+
 	collect_info(&rtstatus, vd);
+
 	VSM_Delete(vd);
 	return "";
 }

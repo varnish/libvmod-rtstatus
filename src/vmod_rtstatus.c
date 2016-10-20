@@ -4,12 +4,18 @@
 #include <sys/time.h>
 #include <math.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "vmod_rtstatus.h"
 #include "vapi/vsc.h"
 #include "vrt.h"
 #include "vtim.h"
 #include "vcl.h"
+#include "vcs.h"
+
+#include "vas.h"
+#include "miniobj.h"
+
 
 void
 rate(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
@@ -48,9 +54,11 @@ rate(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 int
 json_stats(void *priv, const struct VSC_point *const pt)
 {
-	struct rtstatus_priv *rtstatus = priv;
 	const struct VSC_section *sec;
+	struct rtstatus_priv *rtstatus;
 	uint64_t val;
+
+	CAST_OBJ_NOTNULL(rtstatus, priv, VMOD_RTSTATUS_MAGIC);
 
 	if (pt == NULL)
 		return(0);
@@ -98,12 +106,14 @@ json_stats(void *priv, const struct VSC_point *const pt)
 int
 be_info(void *priv, const struct VSC_point *const pt)
 {
-	struct rtstatus_priv *rtstatus = priv;
+	struct rtstatus_priv *rtstatus;
 	const struct VSC_section *sec;
 	uint64_t val;
 
 	if (pt == NULL)
-		return (0);
+		return(0);
+
+	CAST_OBJ(rtstatus, priv, VMOD_RTSTATUS_MAGIC);
 
 	val = *(const volatile uint64_t *)pt->ptr;
 	sec = pt->section;
@@ -163,13 +173,29 @@ be_info(void *priv, const struct VSC_point *const pt)
 int
 collect_info(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 {
+	char vrt_hostname[255];
+
+	CHECK_OBJ_NOTNULL(rtstatus, VMOD_RTSTATUS_MAGIC);
+	AN(vd);
+	AN(rtstatus->vsb);
+
 	VSB_cat(rtstatus->vsb, "{\n");
 	rate(rtstatus, vd);
-	general_info(rtstatus);
+
+	VSB_cat(rtstatus->vsb, "\t\"varnish_version\" : \"");
+	VSB_cat(rtstatus->vsb, VCS_version);
+	VSB_cat(rtstatus->vsb, "\",\n");
+	gethostname(vrt_hostname, sizeof(vrt_hostname));
+
+	VSB_cat(rtstatus->vsb, "\t\"server_id\": \"");
+	VSB_cat(rtstatus->vsb, vrt_hostname);
+	VSB_cat(rtstatus->vsb, "\",\n");
+
 	VSB_cat(rtstatus->vsb, "\t\"be_info\":\n\t\t[\n\t\t");
 
 	(void)VSC_Iter(vd, NULL, be_info, rtstatus);
 	VSB_cat(rtstatus->vsb, "\n\t\t],\n");
+
 	cont = 0;
 	(void)VSC_Iter(vd, NULL, json_stats, rtstatus);
 	VSB_cat(rtstatus->vsb, "\n}\n");
