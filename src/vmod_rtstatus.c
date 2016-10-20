@@ -1,3 +1,4 @@
+
 #include <inttypes.h>
 #include <time.h>
 #include <sys/time.h>
@@ -43,6 +44,7 @@ rate(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 	VSB_printf(rtstatus->vsb, "\t\"avg_load\": %.2f,\n", (double)req / up);
 }
 
+
 int
 json_stats(void *priv, const struct VSC_point *const pt)
 {
@@ -51,7 +53,7 @@ json_stats(void *priv, const struct VSC_point *const pt)
 	uint64_t val;
 
 	if (pt == NULL)
-		return (0);
+		return(0);
 
 	val = *(const volatile uint64_t *)pt->ptr;
 	sec = pt->section;
@@ -60,6 +62,7 @@ json_stats(void *priv, const struct VSC_point *const pt)
 		rtstatus->jp = 0;
 	else
 		VSB_cat(rtstatus->vsb, ",\n");
+
 	VSB_cat(rtstatus->vsb, "\t\"");
 	if (strcmp(sec->fantom->type, "")) {
 		VSB_cat(rtstatus->vsb, sec->fantom->type);
@@ -87,8 +90,10 @@ json_stats(void *priv, const struct VSC_point *const pt)
 	VSB_printf(rtstatus->vsb,"\"value\": %" PRIu64 "}", val);
 	if (rtstatus->jp)
 		VSB_cat(rtstatus->vsb, "\n");
+
 	return(0);
 }
+
 
 int
 be_info(void *priv, const struct VSC_point *const pt)
@@ -162,6 +167,7 @@ collect_info(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 	rate(rtstatus, vd);
 	general_info(rtstatus);
 	VSB_cat(rtstatus->vsb, "\t\"be_info\":\n\t\t[\n\t\t");
+
 	(void)VSC_Iter(vd, NULL, be_info, rtstatus);
 	VSB_cat(rtstatus->vsb, "\n\t\t],\n");
 	cont = 0;
@@ -170,4 +176,3 @@ collect_info(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 
 	return(0);
 }
-

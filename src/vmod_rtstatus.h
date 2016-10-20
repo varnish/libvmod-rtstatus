@@ -21,4 +21,3 @@ int n_be, cont;
 
 int collect_info(struct rtstatus_priv *rtstatus, struct VSM_data *vd);
 int general_info(struct rtstatus_priv *rtstatus);
-

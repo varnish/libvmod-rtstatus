@@ -16,8 +16,10 @@ init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
         be_happy = 0;
         n_be = 0;
         cont = 0;
-        return (0);
+        return(0);
 }
+
+
 int
 general_info(struct rtstatus_priv *rtstatus)
 {
@@ -31,6 +33,7 @@ general_info(struct rtstatus_priv *rtstatus)
 	VSB_cat(rtstatus->vsb, "\",\n");
 	return(0);
 }
+
 
 VCL_STRING
 vmod_rtstatus(VRT_CTX)
