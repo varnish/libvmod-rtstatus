@@ -17,7 +17,7 @@
 #include "miniobj.h"
 
 
-void
+static void
 rate(struct rtstatus_priv *rs, struct VSM_data *vd)
 {
 	struct VSC_C_main *VSC_C_main;
@@ -57,7 +57,7 @@ rate(struct rtstatus_priv *rs, struct VSM_data *vd)
 }
 
 
-int
+static int
 stats_cb(void *priv, const struct VSC_point *const pt)
 {
 	const struct VSC_section *sec;
@@ -104,7 +104,7 @@ stats_cb(void *priv, const struct VSC_point *const pt)
 }
 
 
-int
+static int
 backend_cb(void *priv, const struct VSC_point *const pt)
 {
 	const struct VSC_section *sec;
