@@ -76,7 +76,7 @@ In your VCL you could then use this vmod along the following lines::
                         set resp.http.Content-Type = "text/html; charset=utf-8";
                         synthetic(rtstatus.html());
                         return (deliver);
-                        }
+                }
         }
 
 
@@ -157,17 +157,17 @@ Responses
 	Total amount of bytes sent to Varnish by the backend.
 
 Pipe hdr
-	Total amount of piped header bytes. 
+	Total amount of piped header bytes.
 
 Pipe out
-	Total amount of piped bytes to the backend. 
+	Total amount of piped bytes to the backend.
 
 Pipe in
-	Total amount of piped bytes from the backend. 
+	Total amount of piped bytes from the backend.
 
 Conn
 	Concurrent connections to backend.
 
 Req
-	Number of requests sent to the backend.	
+	Number of requests sent to the backend.
 
