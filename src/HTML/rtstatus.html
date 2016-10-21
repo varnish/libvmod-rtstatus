@@ -108,111 +108,135 @@
   </div>
 </div>
 <script>
-function openSpoiler(id){var a = document.getElementById(id).style;a.display = a.display=='block'?'none':'block'}
+
+function openSpoiler(id) {
+  var a = document.getElementById(id).style;
+  a.display = a.display == 'block' ? 'none' : 'block'
+}
+
 var myJSON
 var dataToStore;
 var localJSON;
 var localJson;
+
 function loadJSON() {
-$.ajax({
-  url: "/rtstatus.json",
-  success: function(json){
-    var JsonToStore = JSON.stringify(eval('(' + json + ')'));
-    localStorage.setItem('json', JsonToStore);
-  }
-});
+  $.ajax({
+    url: "/rtstatus.json",
+    success: function(json) {
+      var JsonToStore = JSON.stringify(eval('(' + json + ')'));
+      localStorage.setItem('json', JsonToStore);
+    }
+  });
 }
-function getJSON(){localJson = JSON.parse(localStorage.getItem('json'));}
-function info(){
-getJSON();
-$.each(localJson, function(key, val) {
-$('table#info TBODY').html("");
-$('table#info TBODY').append('<tr><td>'+"<b>Varnish version: </b> "+'</td><td>'+localJson.varnish_version +'</td><td></tr>');
-$('table#info TBODY').append('<tr><td>'+"<b>Varnish uptime: </b> "+'</td><td>'+localJson.uptime +'</td><td></tr>');
-$('table#info TBODY').append('<tr><td>'+"<b>Hit ratio: </b> "+'</td><td>'+ localJson.absolute_hitrate + ' %'+'</td><td></tr>');
-$('table#info TBODY').append('<tr><td>'+"<b>Avg hitrate: </b> "+'</td><td>'+ localJson.avg_hitrate + ' %'+'</td><td></tr>');
-$('table#info TBODY').append('<tr><td>'+"<b>Avg load: </b> "+'</td><td>'+localJson.avg_load +' req/s'+'</td><td></tr>');
-});
+
+function getJSON() {
+  localJson = JSON.parse(localStorage.getItem('json'));
 }
+
+function info() {
+  getJSON();
+  $.each(localJson, function(key, val) {
+    $('table#info TBODY').html("");
+    $('table#info TBODY').append('<tr><td>' + "<b>Varnish version: </b> " + '</td><td>' + localJson.varnish_version + '</td><td></tr>');
+    $('table#info TBODY').append('<tr><td>' + "<b>Varnish uptime: </b> " + '</td><td>' + localJson.uptime + '</td><td></tr>');
+    $('table#info TBODY').append('<tr><td>' + "<b>Hit ratio: </b> " + '</td><td>' + localJson.absolute_hitrate + ' %' + '</td><td></tr>');
+    $('table#info TBODY').append('<tr><td>' + "<b>Avg hitrate: </b> " + '</td><td>' + localJson.avg_hitrate + ' %' + '</td><td></tr>');
+    $('table#info TBODY').append('<tr><td>' + "<b>Avg load: </b> " + '</td><td>' + localJson.avg_load + ' req/s' + '</td><td></tr>');
+  });
+}
+
 function beOverView() {
-var tmp=[];
-$('table#beover TBODY').html("");
-$.each(localJson, function(key, val){
-	if(val.type === "MAIN" && key.match("backend")){
-		tmp.push( "<p>" +  val.value + "</p>" );
-}});
-$('table#beover TBODY').append('<tr><td>'+"      "+'</td><td>'+tmp[7]+'</td><td>'+tmp[8]+'</td><td>'+tmp[0]+'</td><td>'+tmp[1]+'</td><td>'+tmp[2]+'</td><td>'+tmp[3]+'</td><td>'+tmp[4]+'</td><td>'+tmp[5]+'</td><td>'+tmp[6]+'</td><td></tr>');
+  var tmp = [];
+  $('table#beover TBODY').html("");
+  $.each(localJson, function(key, val) {
+    if (val.type === "MAIN" && key.match("backend")) {
+      tmp.push("<p>" + val.value + "</p>");
+    }
+  });
+  $('table#beover TBODY').append('<tr><td>' + "      " + '</td><td>' + tmp[7] + '</td><td>' + tmp[8] + '</td><td>' + tmp[0] + '</td><td>' + tmp[1] + '</td><td>' + tmp[2] + '</td><td>' + tmp[3] + '</td><td>' + tmp[4] + '</td><td>' + tmp[5] + '</td><td>' + tmp[6] + '</td><td></tr>');
 }
+
 function spoiler() {
-$('table#tbl TBODY').html("");
-$.each(localJson, function(key, val){
-	if(val.type === "MAIN" || val.type === "MGT" || val.type === "MEMPOOL" || val.type === "VBE" || val.type === "LCK"){
-		$('table#tbl TBODY').append('<tr><td>'+key+'</td><td>'+val.descr+'</td><td>'+val.value+'</td><td></tr>');
+  $('table#tbl TBODY').html("");
+  $.each(localJson, function(key, val) {
+    if (val.type === "MAIN" || val.type === "MGT" || val.type === "MEMPOOL" || val.type === "VBE" || val.type === "LCK") {
+      $('table#tbl TBODY').append('<tr><td>' + key + '</td><td>' + val.descr + '</td><td>' + val.value + '</td><td></tr>');
+    }
+  });
 }
-});
-}
-function beCollect(){
-var cont =0 ;
-$('table#tblbe TBODY').html("");
-$.each(localJson, function(key, val){
-        "if(key.match("VBE")){
-cont++;
-switch(cont){
-case 1: var tmp1 = val.value;
-items.push(tmp1);
-break;
-case 2: var tmp2 = val.value;
-items.push(tmp2);
-break;
-case 3: var tmp3 = val.value;
-items.push(tmp3);
-break;
-case 4: var tmp4 = val.value;
-items.push(tmp4);
-break;
-case 5: var tmp5 = val.value;
-items.push(tmp5);
-break;
-case 6: var tmp6 = val.value;
-items.push(tmp6);
-break;
-case 7: var tmp7 = val.value;
-items.push(tmp7);
-break;
-case 8: var tmp8 = val.value;
-items.push(tmp8);
-break;
-case 9: var tmp9 = val.value;
-items.push(tmp9);
-break;
-};
-}
-});
+unction beCollect() {
+  var cont = 0;
+  $('table#tblbe TBODY').html("");
+  $.each(localJson, function(key, val) {
+      "if(key.match("
+      VBE ")){
+      cont++;
+      switch (cont) {
+        case 1:
+          var tmp1 = val.value;
+          items.push(tmp1);
+          break;
+        case 2:
+          var tmp2 = val.value;
+          items.push(tmp2);
+          break;
+        case 3:
+          var tmp3 = val.value;
+          items.push(tmp3);
+          break;
+        case 4:
+          var tmp4 = val.value;
+          items.push(tmp4);
+          break;
+        case 5:
+          var tmp5 = val.value;
+          items.push(tmp5);
+          break;
+        case 6:
+          var tmp6 = val.value;
+          items.push(tmp6);
+          break;
+        case 7:
+          var tmp7 = val.value;
+          items.push(tmp7);
+          break;
+        case 8:
+          var tmp8 = val.value;
+          items.push(tmp8);
+          break;
+        case 9:
+          var tmp9 = val.value;
+          items.push(tmp9);
+          break;
+      };
+    }
+  });
 }
 var items = [];
 var prev_req = [];
 var prev_resp = [];
-function beDetails() {
-var len = localJson.be_info.length;
-for(var i = 0; i < len; i++){
-$('table#tblbe TBODY').append('<tr><td>'+localJson.be_info[i].server_name+'</td><td>'+localJson.be_info[i].happy+'</td><td>'+Math.round(localJson.be_info[i].bereq_tot-prev_req[i]) +'</td><td>'+ localJson.be_info[i].bereq_tot +'</td><td>'+ Math.round(localJson.be_info[i].beresp_tot-prev_resp[i]) +'</td><td>'+ localJson.be_info[i].beresp_tot +'</td><td>'+localJson.be_info[i].pipe_hdrbytes +'</td><td>'+localJson.be_info[i].pipe_out +'</td><td>'+localJson.be_info[i].pipe_in +'</td><td>'+localJson.be_info[i].conn +'</td><td>'+localJson.be_info[i].req +'</td></tr>');
-        "prev_req[i] = localJson.be_info[i].bereq_tot;
-        "prev_resp[i] = localJson.be_info[i].beresp_tot;
-        "}
-        "}
-function main() {
-  try{
-    loadJSON();
-    info();
-    beOverView();
-    beCollect();
-    beDetails();
-    spoiler();
-    localStorage.removeItem('json');
-  }catch(e){}
-}
-setInterval(function(){main();}, 1000);
 
+function beDetails() {
+  var len = localJson.be_info.length;
+  for (var i = 0; i < len; i++) {
+    $('table#tblbe TBODY').append('<tr><td>' + localJson.be_info[i].server_name + '</td><td>' + localJson.be_info[i].happy + '</td><td>' + Math.round(localJson.be_info[i].bereq_tot - prev_req[i]) + '</td><td>' + localJson.be_info[i].bereq_tot + '</td><td>' + Math.round(localJson.be_info[i].beresp_tot - prev_resp[i]) + '</td><td>' + localJson.be_info[i].beresp_tot + '</td><td>' + localJson.be_info[i].pipe_hdrbytes + '</td><td>' + localJson.be_info[i].pipe_out + '</td><td>' + localJson.be_info[i].pipe_in + '</td><td>' + localJson.be_info[i].conn + '</td><td>' + localJson.be_info[i].req + '</td></tr>');
+    "prev_req[i] = localJson.be_info[i].bereq_tot;
+    "prev_resp[i] = localJson.be_info[i].beresp_tot;
+    "}
+    "}
+
+    function main() {
+      try {
+        loadJSON();
+        info();
+        beOverView();
+        beCollect();
+        beDetails();
+        spoiler();
+        localStorage.removeItem('json');
+      } catch (e) {}
+    }
+    setInterval(function() { main(); }, 1000); 
 </script>
 </body>
 </html>
