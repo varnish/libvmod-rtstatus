@@ -1,0 +1,21 @@
+varnishtest "Test if the JSON output is valid."
+
+server s1 { } -start
+
+varnish v1 -vcl+backend {
+	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
+	sub vcl_recv {
+		if (req.url ~ "/rtstatus") { return(synth(200, "OK")); }
+	}
+	sub vcl_synth {
+		if (resp.status == 200) {
+			synthetic(rtstatus.rtstatus());
+			return(deliver);
+		}
+	}
+} -start
+
+shell "curl --silent http://${v1_addr}:${v1_port}/rtstatus.json > ${tmpdir}/rtstatus.json"
+
+# json_pp is included in perl on Debian.
+shell "json_pp < ${tmpdir}/rtstatus.json 1>/dev/null"

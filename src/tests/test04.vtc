@@ -14,7 +14,7 @@ varnish v1 -vcl+backend {
 		if (resp.status == 200) {
 			synthetic(rtstatus.rtstatus());
 			return(deliver);
-		}	
+		}
 	}
 } -start
 
@@ -32,7 +32,7 @@ varnish v2 -vcl {
 		if (resp.status == 200) {
 			synthetic(rtstatus.rtstatus());
 			return(deliver);
-		}	
+		}
 	}
 } -start
 
