@@ -27,8 +27,6 @@ response of the following format::
 
 visiting the URL /rtstatus on the Varnish server will produce an application/javascript response.
 
-$Event init_function
-
 $Function STRING rtstatus()
 Description
         Returns a JSON object with relevant Varnish counters.

@@ -5,15 +5,6 @@
 #include "vrt.h"
 #include "vrt_obj.h"
 
-int
-init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
-{
-	if (e != VCL_EVENT_LOAD)
-		return (0);
-        return(0);
-}
-
-
 VCL_STRING
 vmod_rtstatus(VRT_CTX)
 {
