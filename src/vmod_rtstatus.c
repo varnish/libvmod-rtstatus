@@ -20,8 +20,8 @@
 void
 rate(struct rtstatus_priv *rs, struct VSM_data *vd)
 {
-	double ratio;
 	struct VSC_C_main *VSC_C_main;
+	double ratio;
 	uint64_t hit, miss;
 	time_t up;
 	int req;
@@ -52,7 +52,7 @@ rate(struct rtstatus_priv *rs, struct VSM_data *vd)
 
 
 int
-json_stats(void *priv, const struct VSC_point *const pt)
+stats_cb(void *priv, const struct VSC_point *const pt)
 {
 	const struct VSC_section *sec;
 	struct rtstatus_priv *rs;
@@ -99,10 +99,10 @@ json_stats(void *priv, const struct VSC_point *const pt)
 
 
 int
-be_info(void *priv, const struct VSC_point *const pt)
+backend_cb(void *priv, const struct VSC_point *const pt)
 {
-	struct rtstatus_priv *rs;
 	const struct VSC_section *sec;
+	struct rtstatus_priv *rs;
 	uint64_t val;
 
 	if (pt == NULL)
@@ -181,12 +181,12 @@ collect_info(struct rtstatus_priv *rs, struct VSM_data *vd)
 	VSB_cat(rs->vsb, "\"be_info\": [\n");
 	VSB_indent(rs->vsb, 4);
 
-	(void)VSC_Iter(vd, NULL, be_info, rs);
+	(void)VSC_Iter(vd, NULL, backend_cb, rs);
 	rs->vsb->s_len -= 2;  /* dirty */
 	VSB_indent(rs->vsb, -4);
 	VSB_cat(rs->vsb, "\n],\n");
 
-	(void)VSC_Iter(vd, NULL, json_stats, rs);
+	(void)VSC_Iter(vd, NULL, stats_cb, rs);
 	rs->vsb->s_len -= 2;  /* dirty */
 
 	VSB_indent(rs->vsb, -4);
