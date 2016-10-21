@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 from sys import argv
+from os.path import basename
 
 # Based on http://stackoverflow.com/questions/14945095/how-to-escape-string-for-generated-c
 def enc(s):
+   s = s[:-1]  # Remove \n.
    result = ''
    for c in s:
       if not (32 <= ord(c) < 127) or c in ('\\', '"'):
