@@ -29,8 +29,8 @@ tags
 /m4/
 .dirstamp
 
-/src/vcc_if.c
-/src/vcc_if.h
+/src/vcc_*if.c
+/src/vcc_*if.h
 
 # Built
 src/vmod*.man.rst

@@ -14,18 +14,18 @@ libvmod_rtstatus_la_SOURCES = \
 	vmod_html.c
 
 nodist_libvmod_rtstatus_la_SOURCES = \
-	vcc_if.c \
-	vcc_if.h
+	vcc_rtstatus_if.c \
+	vcc_rtstatus_if.h
 
-vmod_rtstatus.lo: vcc_if.c vcc_if.h
+vmod_rtstatus.lo: vcc_rtstatus_if.c vcc_rtstatus_if.h
 
 dist_man_MANS = vmod_rtstatus.3
 MAINTAINERCLEANFILES = $(dist_man_MANS)
 
-vcc_if.c: vcc_if.h
+vcc_rtstatus_if.c: vcc_rtstatus_if.h
 
-vcc_if.h vmod_rtstatus.man.rst: @VMODTOOL@ $(top_srcdir)/src/vmod_rtstatus.vcc
-	@VMODTOOL@ $(top_srcdir)/src/vmod_rtstatus.vcc
+vcc_rtstatus_if.h vmod_rtstatus.man.rst: @VMODTOOL@ $(top_srcdir)/src/vmod_rtstatus.vcc
+	@VMODTOOL@ -o vcc_rtstatus_if $(top_srcdir)/src/vmod_rtstatus.vcc
 
 BUILT_SOURCES = vmod_html.h
 vmod_html.h: rtstatus.html cstring.py
@@ -59,8 +59,8 @@ EXTRA_DIST = \
 	$(VMOD_TESTS)
 
 CLEANFILES = \
-	$(builddir)/vcc_if.c \
-	$(builddir)/vcc_if.h \
+	$(builddir)/vcc_rtstatus_if.c \
+	$(builddir)/vcc_rtstatus_if.h \
 	$(builddir)/vmod_html.h \
 	$(builddir)/vmod_rtstatus.rst \
 	$(builddir)/vmod_rtstatus.man.rst \

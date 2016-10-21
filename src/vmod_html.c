@@ -5,6 +5,8 @@
 #include "vmod_rtstatus.h"
 #include "vmod_html.h"
 
+#include "vcc_rtstatus_if.h"
+
 VCL_STRING
 vmod_html(const struct vrt_ctx *ctx)
 {

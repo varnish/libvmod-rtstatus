@@ -5,6 +5,8 @@
 #include "vrt.h"
 #include "vrt_obj.h"
 
+#include "vcc_rtstatus_if.h"
+
 VCL_STRING
 vmod_rtstatus(VRT_CTX)
 {
