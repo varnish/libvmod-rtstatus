@@ -27,6 +27,9 @@ vcc_if.c: vcc_if.h
 vcc_if.h vmod_rtstatus.man.rst: @VMODTOOL@ $(top_srcdir)/src/vmod_rtstatus.vcc
 	@VMODTOOL@ $(top_srcdir)/src/vmod_rtstatus.vcc
 
+BUILT_SOURCES = HTML/vmod_html.h
+HTML/vmod_html.h: HTML/rtstatus.html HTML/cstring
+	@PYTHON@ HTML/cstring HTML/rtstatus.html > $@
 
 vmod_rtstatus.3: vmod_rtstatus.man.rst
 
