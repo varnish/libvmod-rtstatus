@@ -41,13 +41,13 @@ rate(struct rtstatus_priv *rs, struct VSM_data *vd)
 	up = VSC_C_main->uptime;
 	req = VSC_C_main->client_req;
 
-	VSB_printf(rs->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
+	VSB_printf(rs->vsb, "\"uptime\": \"%d+%02d:%02d:%02d\",\n",
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
-	VSB_printf(rs->vsb, "\t\"uptime_sec\": %.2f,\n", (double)up);
-        VSB_printf(rs->vsb, "\t\"absolute_hitrate\": %.2f,\n", ratio * 100);
-	VSB_printf(rs->vsb, "\t\"avg_hitrate\": %.2f,\n", (ratio * 100) / up);
-	VSB_printf(rs->vsb, "\t\"avg_load\": %.2f,\n", (double)req / up);
+	VSB_printf(rs->vsb, "\"uptime_sec\": %.2f,\n", (double)up);
+        VSB_printf(rs->vsb, "\"absolute_hitrate\": %.2f,\n", ratio * 100);
+	VSB_printf(rs->vsb, "\"avg_hitrate\": %.2f,\n", (ratio * 100) / up);
+	VSB_printf(rs->vsb, "\"avg_load\": %.2f,\n", (double)req / up);
 }
 
 
@@ -71,7 +71,7 @@ json_stats(void *priv, const struct VSC_point *const pt)
 	else
 		VSB_cat(rs->vsb, ",\n");
 
-	VSB_cat(rs->vsb, "\t\"");
+	VSB_cat(rs->vsb, "\"");
 	if (strcmp(sec->fantom->type, "")) {
 		VSB_cat(rs->vsb, sec->fantom->type);
 		VSB_cat(rs->vsb, ".");
@@ -82,6 +82,7 @@ json_stats(void *priv, const struct VSC_point *const pt)
 	}
 	VSB_cat(rs->vsb, pt->desc->name);
 	VSB_cat(rs->vsb, "\": {");
+	VSB_indent(rs->vsb, 4);
 	if (strcmp(sec->fantom->type, "")) {
 		VSB_cat(rs->vsb, "\"type\": \"");
 		VSB_cat(rs->vsb, sec->fantom->type);
@@ -96,6 +97,8 @@ json_stats(void *priv, const struct VSC_point *const pt)
 	VSB_cat(rs->vsb, pt->desc->sdesc);
 	VSB_cat(rs->vsb, "\", ");
 	VSB_printf(rs->vsb,"\"value\": %" PRIu64 "}", val);
+	VSB_indent(rs->vsb, -4);
+
 	if (rs->jp)
 		VSB_cat(rs->vsb, "\n");
 
@@ -130,10 +133,10 @@ be_info(void *priv, const struct VSC_point *const pt)
 			bereq_hdr = val;
 		if (!strcmp(pt->desc->name, "bereq_bodybytes")) {
 			bereq_body = val;
-			VSB_cat(rs->vsb, "\t{\"server_name\":\"");
+			VSB_cat(rs->vsb, "{\"server_name\": \"");
 			VSB_cat(rs->vsb, pt->section->fantom->ident);
 			VSB_printf(rs->vsb,"\", \"happy\": \"%s\"" , be_happy ? "healthy" : "sick");
-			VSB_printf(rs->vsb,", \"bereq_tot\": %" PRIu64 ",",
+			VSB_printf(rs->vsb,", \"bereq_tot\": %" PRIu64 ", ",
 			    bereq_body + bereq_hdr);
 		}
 
@@ -141,27 +144,27 @@ be_info(void *priv, const struct VSC_point *const pt)
 			beresp_hdr = val;
                 if (!strcmp(pt->desc->name, "beresp_bodybytes")) {
 			beresp_body = val;
-			VSB_printf(rs->vsb,"\"beresp_tot\": %" PRIu64 ",",
+			VSB_printf(rs->vsb,"\"beresp_tot\": %" PRIu64 ", ",
 			    beresp_body + beresp_hdr);
 		}
 
 		if (!strcmp(pt->desc->name, "pipe_hdrbytes"))
-			VSB_printf(rs->vsb,"\"pipe_hdrbytes\": %" PRIu64 ",", val);
+			VSB_printf(rs->vsb,"\"pipe_hdrbytes\": %" PRIu64 ", ", val);
 
 		if (!strcmp(pt->desc->name, "pipe_out"))
-			VSB_printf(rs->vsb,"\"pipe_out\": %" PRIu64 ",", val);
+			VSB_printf(rs->vsb,"\"pipe_out\": %" PRIu64 ", ", val);
 
                 if (!strcmp(pt->desc->name, "pipe_in"))
-			VSB_printf(rs->vsb,"\"pipe_in\": %" PRIu64 ",", val);
+			VSB_printf(rs->vsb,"\"pipe_in\": %" PRIu64 ", ", val);
 
                 if (!strcmp(pt->desc->name, "conn"))
-			VSB_printf(rs->vsb,"\"conn\": %" PRIu64 ",", val);
+			VSB_printf(rs->vsb,"\"conn\": %" PRIu64 ", ", val);
 
 		if (!strcmp(pt->desc->name, "req")) {
 			VSB_printf(rs->vsb,"\"req\": %" PRIu64 "}", val);
 
 			if (cont < (n_be -1)) {
-				VSB_cat(rs->vsb, ",\n\t\t");
+				VSB_cat(rs->vsb, ",\n");
 				cont++;
 			}
 		}
@@ -180,21 +183,25 @@ collect_info(struct rtstatus_priv *rs, struct VSM_data *vd)
 	AN(rs->vsb);
 
 	VSB_cat(rs->vsb, "{\n");
+	VSB_indent(rs->vsb, 4);
+
 	rate(rs, vd);
 
-	VSB_cat(rs->vsb, "\t\"varnish_version\" : \"");
+	VSB_cat(rs->vsb, "\"varnish_version\": \"");
 	VSB_cat(rs->vsb, VCS_version);
 	VSB_cat(rs->vsb, "\",\n");
 	gethostname(vrt_hostname, sizeof(vrt_hostname));
 
-	VSB_cat(rs->vsb, "\t\"server_id\": \"");
+	VSB_cat(rs->vsb, "\"server_id\": \"");
 	VSB_cat(rs->vsb, vrt_hostname);
 	VSB_cat(rs->vsb, "\",\n");
 
-	VSB_cat(rs->vsb, "\t\"be_info\":\n\t\t[\n\t\t");
+	VSB_cat(rs->vsb, "\"be_info\": [\n");
+	VSB_indent(rs->vsb, 4);
 
 	(void)VSC_Iter(vd, NULL, be_info, rs);
-	VSB_cat(rs->vsb, "\n\t\t],\n");
+	VSB_indent(rs->vsb, -4);
+	VSB_cat(rs->vsb, "\n],\n");
 
 	cont = 0;
 	(void)VSC_Iter(vd, NULL, json_stats, rs);
