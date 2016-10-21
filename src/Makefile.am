@@ -28,8 +28,8 @@ vcc_if.h vmod_rtstatus.man.rst: @VMODTOOL@ $(top_srcdir)/src/vmod_rtstatus.vcc
 	@VMODTOOL@ $(top_srcdir)/src/vmod_rtstatus.vcc
 
 BUILT_SOURCES = HTML/vmod_html.h
-HTML/vmod_html.h: HTML/rtstatus.html HTML/cstring
-	@PYTHON@ HTML/cstring HTML/rtstatus.html > $@
+HTML/vmod_html.h: HTML/rtstatus.html HTML/cstring.py
+	@PYTHON@ $(abs_top_srcdir)/src/HTML/cstring.py $(abs_top_srcdir)/src/HTML/rtstatus.html > $@
 
 vmod_rtstatus.3: vmod_rtstatus.man.rst
 
@@ -53,12 +53,15 @@ $(top_srcdir)/src/tests/*.vtc:
 check: $(VMOD_TESTS)
 
 EXTRA_DIST = \
-	vmod_rtstatus.vcc\
+	vmod_rtstatus.vcc \
+	HTML/rtstatus.html \
+	HTML/cstring.py \
 	$(VMOD_TESTS)
 
 CLEANFILES = \
 	$(builddir)/vcc_if.c \
 	$(builddir)/vcc_if.h \
+	$(builddir)/HTML/vmod_html.h \
 	$(builddir)/vmod_rtstatus.rst \
 	$(builddir)/vmod_rtstatus.man.rst \
 	$(dist_man_MANS)
