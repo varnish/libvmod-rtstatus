@@ -1,6 +1,6 @@
 AC_PREREQ(2.59)
-AC_COPYRIGHT([Copyright (c) 2014 Varnish Software AS])
-AC_INIT([libvmod-rtstatus], [1.0.1])
+AC_COPYRIGHT([Copyright (c) 2014-2016 Varnish Software])
+AC_INIT([libvmod-rtstatus], [1.2.0])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR(src/vmod_rtstatus.vcc)
 AC_CONFIG_HEADERS(config.h)
