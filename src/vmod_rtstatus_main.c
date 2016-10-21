@@ -23,10 +23,10 @@ init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
 VCL_STRING
 vmod_rtstatus(VRT_CTX)
 {
-	struct rtstatus_priv rtstatus;
+	struct rtstatus_priv rs;
 	struct VSM_data *vd;
 
-	INIT_OBJ(&rtstatus, VMOD_RTSTATUS_MAGIC);
+	INIT_OBJ(&rs, VMOD_RTSTATUS_MAGIC);
 
 	if (ctx->method != VCL_MET_SYNTH) {
 		VSLb(ctx->vsl, SLT_VCL_Error, "rtstatus() can only be used in vcl_synth");
@@ -43,11 +43,11 @@ vmod_rtstatus(VRT_CTX)
 		return "{ \"error\": \"Check Varnishlog for more details\" }";
 	}
 
-	rtstatus.vsb = ctx->specific;
-	rtstatus.cpy_ctx = ctx;
-       	rtstatus.jp = 1;
+	rs.vsb = ctx->specific;
+	rs.cpy_ctx = ctx;
+	rs.jp = 1;
 
-	collect_info(&rtstatus, vd);
+	collect_info(&rs, vd);
 
 	VSM_Delete(vd);
 	return "";

@@ -18,7 +18,7 @@
 
 
 void
-rate(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
+rate(struct rtstatus_priv *rs, struct VSM_data *vd)
 {
 	double ratio;
 	struct VSC_C_main *VSC_C_main;
@@ -41,13 +41,13 @@ rate(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
 	up = VSC_C_main->uptime;
 	req = VSC_C_main->client_req;
 
-	VSB_printf(rtstatus->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
+	VSB_printf(rs->vsb, "\t\"uptime\" : \"%d+%02d:%02d:%02d\",\n",
 	    (int)up / 86400, (int)(up % 86400) / 3600,
 	    (int)(up % 3600) / 60, (int)up % 60);
-	VSB_printf(rtstatus->vsb, "\t\"uptime_sec\": %.2f,\n", (double)up);
-        VSB_printf(rtstatus->vsb, "\t\"absolute_hitrate\": %.2f,\n", ratio * 100);
-	VSB_printf(rtstatus->vsb, "\t\"avg_hitrate\": %.2f,\n", (ratio * 100) / up);
-	VSB_printf(rtstatus->vsb, "\t\"avg_load\": %.2f,\n", (double)req / up);
+	VSB_printf(rs->vsb, "\t\"uptime_sec\": %.2f,\n", (double)up);
+        VSB_printf(rs->vsb, "\t\"absolute_hitrate\": %.2f,\n", ratio * 100);
+	VSB_printf(rs->vsb, "\t\"avg_hitrate\": %.2f,\n", (ratio * 100) / up);
+	VSB_printf(rs->vsb, "\t\"avg_load\": %.2f,\n", (double)req / up);
 }
 
 
@@ -55,10 +55,10 @@ int
 json_stats(void *priv, const struct VSC_point *const pt)
 {
 	const struct VSC_section *sec;
-	struct rtstatus_priv *rtstatus;
+	struct rtstatus_priv *rs;
 	uint64_t val;
 
-	CAST_OBJ_NOTNULL(rtstatus, priv, VMOD_RTSTATUS_MAGIC);
+	CAST_OBJ_NOTNULL(rs, priv, VMOD_RTSTATUS_MAGIC);
 
 	if (pt == NULL)
 		return(0);
@@ -66,38 +66,38 @@ json_stats(void *priv, const struct VSC_point *const pt)
 	val = *(const volatile uint64_t *)pt->ptr;
 	sec = pt->section;
 
-	if (rtstatus->jp)
-		rtstatus->jp = 0;
+	if (rs->jp)
+		rs->jp = 0;
 	else
-		VSB_cat(rtstatus->vsb, ",\n");
+		VSB_cat(rs->vsb, ",\n");
 
-	VSB_cat(rtstatus->vsb, "\t\"");
+	VSB_cat(rs->vsb, "\t\"");
 	if (strcmp(sec->fantom->type, "")) {
-		VSB_cat(rtstatus->vsb, sec->fantom->type);
-		VSB_cat(rtstatus->vsb, ".");
+		VSB_cat(rs->vsb, sec->fantom->type);
+		VSB_cat(rs->vsb, ".");
 	}
 	if (strcmp(sec->fantom->ident, "")) {
-		VSB_cat(rtstatus->vsb, sec->fantom->ident);
-		VSB_cat(rtstatus->vsb, ".");
+		VSB_cat(rs->vsb, sec->fantom->ident);
+		VSB_cat(rs->vsb, ".");
 	}
-	VSB_cat(rtstatus->vsb, pt->desc->name);
-	VSB_cat(rtstatus->vsb, "\": {");
+	VSB_cat(rs->vsb, pt->desc->name);
+	VSB_cat(rs->vsb, "\": {");
 	if (strcmp(sec->fantom->type, "")) {
-		VSB_cat(rtstatus->vsb, "\"type\": \"");
-		VSB_cat(rtstatus->vsb, sec->fantom->type);
-		VSB_cat(rtstatus->vsb, "\", ");
+		VSB_cat(rs->vsb, "\"type\": \"");
+		VSB_cat(rs->vsb, sec->fantom->type);
+		VSB_cat(rs->vsb, "\", ");
 	}
 	if (strcmp(sec->fantom->ident, "")) {
-		VSB_cat(rtstatus->vsb, "\"ident\": \"");
-		VSB_cat(rtstatus->vsb, sec->fantom->ident);
-		VSB_cat(rtstatus->vsb, "\", ");
+		VSB_cat(rs->vsb, "\"ident\": \"");
+		VSB_cat(rs->vsb, sec->fantom->ident);
+		VSB_cat(rs->vsb, "\", ");
 	}
-	VSB_cat(rtstatus->vsb, "\"descr\": \"");
-	VSB_cat(rtstatus->vsb, pt->desc->sdesc);
-	VSB_cat(rtstatus->vsb, "\", ");
-	VSB_printf(rtstatus->vsb,"\"value\": %" PRIu64 "}", val);
-	if (rtstatus->jp)
-		VSB_cat(rtstatus->vsb, "\n");
+	VSB_cat(rs->vsb, "\"descr\": \"");
+	VSB_cat(rs->vsb, pt->desc->sdesc);
+	VSB_cat(rs->vsb, "\", ");
+	VSB_printf(rs->vsb,"\"value\": %" PRIu64 "}", val);
+	if (rs->jp)
+		VSB_cat(rs->vsb, "\n");
 
 	return(0);
 }
@@ -106,14 +106,14 @@ json_stats(void *priv, const struct VSC_point *const pt)
 int
 be_info(void *priv, const struct VSC_point *const pt)
 {
-	struct rtstatus_priv *rtstatus;
+	struct rtstatus_priv *rs;
 	const struct VSC_section *sec;
 	uint64_t val;
 
 	if (pt == NULL)
 		return(0);
 
-	CAST_OBJ(rtstatus, priv, VMOD_RTSTATUS_MAGIC);
+	CAST_OBJ(rs, priv, VMOD_RTSTATUS_MAGIC);
 
 	val = *(const volatile uint64_t *)pt->ptr;
 	sec = pt->section;
@@ -130,10 +130,10 @@ be_info(void *priv, const struct VSC_point *const pt)
 			bereq_hdr = val;
 		if (!strcmp(pt->desc->name, "bereq_bodybytes")) {
 			bereq_body = val;
-			VSB_cat(rtstatus->vsb, "\t{\"server_name\":\"");
-			VSB_cat(rtstatus->vsb, pt->section->fantom->ident);
-			VSB_printf(rtstatus->vsb,"\", \"happy\": \"%s\"" , be_happy ? "healthy" : "sick");
-			VSB_printf(rtstatus->vsb,", \"bereq_tot\": %" PRIu64 ",",
+			VSB_cat(rs->vsb, "\t{\"server_name\":\"");
+			VSB_cat(rs->vsb, pt->section->fantom->ident);
+			VSB_printf(rs->vsb,"\", \"happy\": \"%s\"" , be_happy ? "healthy" : "sick");
+			VSB_printf(rs->vsb,", \"bereq_tot\": %" PRIu64 ",",
 			    bereq_body + bereq_hdr);
 		}
 
@@ -141,27 +141,27 @@ be_info(void *priv, const struct VSC_point *const pt)
 			beresp_hdr = val;
                 if (!strcmp(pt->desc->name, "beresp_bodybytes")) {
 			beresp_body = val;
-			VSB_printf(rtstatus->vsb,"\"beresp_tot\": %" PRIu64 ",",
+			VSB_printf(rs->vsb,"\"beresp_tot\": %" PRIu64 ",",
 			    beresp_body + beresp_hdr);
 		}
 
 		if (!strcmp(pt->desc->name, "pipe_hdrbytes"))
-			VSB_printf(rtstatus->vsb,"\"pipe_hdrbytes\": %" PRIu64 ",", val);
+			VSB_printf(rs->vsb,"\"pipe_hdrbytes\": %" PRIu64 ",", val);
 
 		if (!strcmp(pt->desc->name, "pipe_out"))
-			VSB_printf(rtstatus->vsb,"\"pipe_out\": %" PRIu64 ",", val);
+			VSB_printf(rs->vsb,"\"pipe_out\": %" PRIu64 ",", val);
 
                 if (!strcmp(pt->desc->name, "pipe_in"))
-			VSB_printf(rtstatus->vsb,"\"pipe_in\": %" PRIu64 ",", val);
+			VSB_printf(rs->vsb,"\"pipe_in\": %" PRIu64 ",", val);
 
                 if (!strcmp(pt->desc->name, "conn"))
-			VSB_printf(rtstatus->vsb,"\"conn\": %" PRIu64 ",", val);
+			VSB_printf(rs->vsb,"\"conn\": %" PRIu64 ",", val);
 
 		if (!strcmp(pt->desc->name, "req")) {
-			VSB_printf(rtstatus->vsb,"\"req\": %" PRIu64 "}", val);
+			VSB_printf(rs->vsb,"\"req\": %" PRIu64 "}", val);
 
 			if (cont < (n_be -1)) {
-				VSB_cat(rtstatus->vsb, ",\n\t\t");
+				VSB_cat(rs->vsb, ",\n\t\t");
 				cont++;
 			}
 		}
@@ -171,34 +171,34 @@ be_info(void *priv, const struct VSC_point *const pt)
 }
 
 int
-collect_info(struct rtstatus_priv *rtstatus, struct VSM_data *vd)
+collect_info(struct rtstatus_priv *rs, struct VSM_data *vd)
 {
 	char vrt_hostname[255];
 
-	CHECK_OBJ_NOTNULL(rtstatus, VMOD_RTSTATUS_MAGIC);
+	CHECK_OBJ_NOTNULL(rs, VMOD_RTSTATUS_MAGIC);
 	AN(vd);
-	AN(rtstatus->vsb);
+	AN(rs->vsb);
 
-	VSB_cat(rtstatus->vsb, "{\n");
-	rate(rtstatus, vd);
+	VSB_cat(rs->vsb, "{\n");
+	rate(rs, vd);
 
-	VSB_cat(rtstatus->vsb, "\t\"varnish_version\" : \"");
-	VSB_cat(rtstatus->vsb, VCS_version);
-	VSB_cat(rtstatus->vsb, "\",\n");
+	VSB_cat(rs->vsb, "\t\"varnish_version\" : \"");
+	VSB_cat(rs->vsb, VCS_version);
+	VSB_cat(rs->vsb, "\",\n");
 	gethostname(vrt_hostname, sizeof(vrt_hostname));
 
-	VSB_cat(rtstatus->vsb, "\t\"server_id\": \"");
-	VSB_cat(rtstatus->vsb, vrt_hostname);
-	VSB_cat(rtstatus->vsb, "\",\n");
+	VSB_cat(rs->vsb, "\t\"server_id\": \"");
+	VSB_cat(rs->vsb, vrt_hostname);
+	VSB_cat(rs->vsb, "\",\n");
 
-	VSB_cat(rtstatus->vsb, "\t\"be_info\":\n\t\t[\n\t\t");
+	VSB_cat(rs->vsb, "\t\"be_info\":\n\t\t[\n\t\t");
 
-	(void)VSC_Iter(vd, NULL, be_info, rtstatus);
-	VSB_cat(rtstatus->vsb, "\n\t\t],\n");
+	(void)VSC_Iter(vd, NULL, be_info, rs);
+	VSB_cat(rs->vsb, "\n\t\t],\n");
 
 	cont = 0;
-	(void)VSC_Iter(vd, NULL, json_stats, rtstatus);
-	VSB_cat(rtstatus->vsb, "\n}\n");
+	(void)VSC_Iter(vd, NULL, json_stats, rs);
+	VSB_cat(rs->vsb, "\n}\n");
 
 	return(0);
 }
