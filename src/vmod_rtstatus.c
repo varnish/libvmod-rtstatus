@@ -46,8 +46,14 @@ rate(struct rtstatus_priv *rs, struct VSM_data *vd)
 	    (int)(up % 3600) / 60, (int)up % 60);
 	VSB_printf(rs->vsb, "\"uptime_sec\": %.2f,\n", (double)up);
         VSB_printf(rs->vsb, "\"absolute_hitrate\": %.2f,\n", ratio * 100);
-	VSB_printf(rs->vsb, "\"avg_hitrate\": %.2f,\n", (ratio * 100) / up);
-	VSB_printf(rs->vsb, "\"avg_load\": %.2f,\n", (double)req / up);
+
+	if (up == 0) {
+		VSB_cat(rs->vsb, "\"avg_hitrate\": null,\n");
+		VSB_cat(rs->vsb, "\"avg_load\": null,\n");
+	} else {
+		VSB_printf(rs->vsb, "\"avg_hitrate\": %.2f,\n", (ratio * 100) / up);
+		VSB_printf(rs->vsb, "\"avg_load\": %.2f,\n", (double)req / up);
+	}
 }
 
 
