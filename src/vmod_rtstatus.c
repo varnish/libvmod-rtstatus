@@ -66,11 +66,6 @@ json_stats(void *priv, const struct VSC_point *const pt)
 	val = *(const volatile uint64_t *)pt->ptr;
 	sec = pt->section;
 
-	if (rs->jp)
-		rs->jp = 0;
-	else
-		VSB_cat(rs->vsb, ",\n");
-
 	VSB_cat(rs->vsb, "\"");
 	if (strcmp(sec->fantom->type, "")) {
 		VSB_cat(rs->vsb, sec->fantom->type);
@@ -96,11 +91,8 @@ json_stats(void *priv, const struct VSC_point *const pt)
 	VSB_cat(rs->vsb, "\"descr\": \"");
 	VSB_cat(rs->vsb, pt->desc->sdesc);
 	VSB_cat(rs->vsb, "\", ");
-	VSB_printf(rs->vsb,"\"value\": %" PRIu64 "}", val);
+	VSB_printf(rs->vsb,"\"value\": %" PRIu64 "},\n", val);
 	VSB_indent(rs->vsb, -4);
-
-	if (rs->jp)
-		VSB_cat(rs->vsb, "\n");
 
 	return(0);
 }
@@ -120,11 +112,6 @@ be_info(void *priv, const struct VSC_point *const pt)
 
 	val = *(const volatile uint64_t *)pt->ptr;
 	sec = pt->section;
-
-	if (!strcmp(sec->fantom->type,"MAIN")) {
-		if (!strcmp(pt->desc->name, "n_backend"))
-			n_be = (int)val;
-	}
 
 	if (!strcmp(sec->fantom->type, "VBE")) {
 		if (!strcmp(pt->desc->name, "happy"))
@@ -161,12 +148,7 @@ be_info(void *priv, const struct VSC_point *const pt)
 			VSB_printf(rs->vsb,"\"conn\": %" PRIu64 ", ", val);
 
 		if (!strcmp(pt->desc->name, "req")) {
-			VSB_printf(rs->vsb,"\"req\": %" PRIu64 "}", val);
-
-			if (cont < (n_be -1)) {
-				VSB_cat(rs->vsb, ",\n");
-				cont++;
-			}
+			VSB_printf(rs->vsb,"\"req\": %" PRIu64 "},\n", val);
 		}
 	}
 
@@ -200,11 +182,14 @@ collect_info(struct rtstatus_priv *rs, struct VSM_data *vd)
 	VSB_indent(rs->vsb, 4);
 
 	(void)VSC_Iter(vd, NULL, be_info, rs);
+	rs->vsb->s_len -= 2;  /* dirty */
 	VSB_indent(rs->vsb, -4);
 	VSB_cat(rs->vsb, "\n],\n");
 
-	cont = 0;
 	(void)VSC_Iter(vd, NULL, json_stats, rs);
+	rs->vsb->s_len -= 2;  /* dirty */
+
+	VSB_indent(rs->vsb, -4);
 	VSB_cat(rs->vsb, "\n}\n");
 
 	return(0);

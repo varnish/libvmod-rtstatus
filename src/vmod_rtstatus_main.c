@@ -14,8 +14,6 @@ init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
         beresp_hdr = beresp_body = 0;
         bereq_hdr = bereq_body = 0;
         be_happy = 0;
-        n_be = 0;
-        cont = 0;
         return(0);
 }
 
@@ -45,7 +43,6 @@ vmod_rtstatus(VRT_CTX)
 
 	rs.vsb = ctx->specific;
 	rs.cpy_ctx = ctx;
-	rs.jp = 1;
 
 	collect_info(&rs, vd);
 
