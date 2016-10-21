@@ -99,7 +99,7 @@ In your VCL you could then use this vmod along the following lines::
 		if (resp.status == 700){
 			set resp.status = 200;
 			set resp.http.Content-Type = "text/plain; charset=utf-8";
-			synthetic(rtstatus.rtstatus(5));
+			synthetic(rtstatus.rtstatus());
 			return (deliver);
 		}
 		if (resp.status == 800) {
