@@ -10,10 +10,6 @@ init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
 {
 	if (e != VCL_EVENT_LOAD)
 		return (0);
-
-        beresp_hdr = beresp_body = 0;
-        bereq_hdr = bereq_body = 0;
-        be_happy = 0;
         return(0);
 }
 
@@ -40,9 +36,7 @@ vmod_rtstatus(VRT_CTX)
 		VSM_Delete(vd);
 		return "{ \"error\": \"Check Varnishlog for more details\" }";
 	}
-
 	rs.vsb = ctx->specific;
-	rs.cpy_ctx = ctx;
 
 	collect_info(&rs, vd);
 

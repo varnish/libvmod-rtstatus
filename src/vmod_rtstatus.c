@@ -121,24 +121,24 @@ backend_cb(void *priv, const struct VSC_point *const pt)
 
 	if (!strcmp(sec->fantom->type, "VBE")) {
 		if (!strcmp(pt->desc->name, "happy"))
-			be_happy = (val % 2);
+			rs->be_happy = (val % 2);
 		if (!strcmp(pt->desc->name, "bereq_hdrbytes"))
-			bereq_hdr = val;
+			rs->bereq_hdr = val;
 		if (!strcmp(pt->desc->name, "bereq_bodybytes")) {
-			bereq_body = val;
+			rs->bereq_body = val;
 			VSB_cat(rs->vsb, "{\"server_name\": \"");
 			VSB_cat(rs->vsb, pt->section->fantom->ident);
-			VSB_printf(rs->vsb,"\", \"happy\": \"%s\"" , be_happy ? "healthy" : "sick");
+			VSB_printf(rs->vsb,"\", \"happy\": \"%s\"" , rs->be_happy ? "healthy" : "sick");
 			VSB_printf(rs->vsb,", \"bereq_tot\": %" PRIu64 ", ",
-			    bereq_body + bereq_hdr);
+			    rs->bereq_body + rs->bereq_hdr);
 		}
 
                 if (!strcmp(pt->desc->name, "beresp_hdrbytes"))
-			beresp_hdr = val;
+			rs->beresp_hdr = val;
                 if (!strcmp(pt->desc->name, "beresp_bodybytes")) {
-			beresp_body = val;
+			rs->beresp_body = val;
 			VSB_printf(rs->vsb,"\"beresp_tot\": %" PRIu64 ", ",
-			    beresp_body + beresp_hdr);
+			    rs->beresp_body + rs->beresp_hdr);
 		}
 
 		if (!strcmp(pt->desc->name, "pipe_hdrbytes"))
@@ -167,8 +167,8 @@ collect_info(struct rtstatus_priv *rs, struct VSM_data *vd)
 	char vrt_hostname[255];
 
 	CHECK_OBJ_NOTNULL(rs, VMOD_RTSTATUS_MAGIC);
-	AN(vd);
 	AN(rs->vsb);
+	AN(vd);
 
 	VSB_cat(rs->vsb, "{\n");
 	VSB_indent(rs->vsb, 4);
