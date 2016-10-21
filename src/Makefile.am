@@ -61,7 +61,7 @@ EXTRA_DIST = \
 CLEANFILES = \
 	$(builddir)/vcc_if.c \
 	$(builddir)/vcc_if.h \
-	$(builddir)/HTML/vmod_html.h \
+	$(builddir)/vmod_html.h \
 	$(builddir)/vmod_rtstatus.rst \
 	$(builddir)/vmod_rtstatus.man.rst \
 	$(dist_man_MANS)
