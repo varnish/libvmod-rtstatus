@@ -1,10 +1,14 @@
 varnishtest "Test if the JSON output is valid."
 
 server s1 { } -start
+server s2 { } -start
+server s3 { } -start
 
 varnish v1 -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
 	sub vcl_recv {
+		if (req.url ~ "never") { set req.backend_hint = s2; }
+		if (req.url ~ "never") { set req.backend_hint = s3; }
 		if (req.url ~ "/rtstatus") { return(synth(200, "OK")); }
 	}
 	sub vcl_synth {
