@@ -7,9 +7,9 @@ libvmod_rtstatus_la_LDFLAGS = -module -export-dynamic -avoid-version -shared $(V
 libvmod_rtstatus_la_LIBADD = -lvarnishapi
 
 libvmod_rtstatus_la_SOURCES = \
+	vmod_rtstatus.c \
 	vmod_rtstatus_vsm.h \
 	vmod_rtstatus_vsm.c \
-	vmod_rtstatus_main.c \
 	vmod_rtstatus_html.h \
 	vmod_rtstatus_html.c
 
