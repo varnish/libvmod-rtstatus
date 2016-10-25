@@ -12,7 +12,7 @@ def enc(s):
             result += '\\%03o' % ord(c)
         else:
             result += c
-    return '"' + result + '"'
+    return result
 
 
 if __name__ == "__main__":
@@ -20,5 +20,5 @@ if __name__ == "__main__":
           % basename(argv[0]))
     print("char html[] = \\")
     for line in map(enc, open(argv[1])):
-        print("  " + line + " \\")
+        print('    \"%s\\n\" \\' % line)
     print(";")
