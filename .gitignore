@@ -35,4 +35,4 @@ tags
 # Built
 src/vmod*.man.rst
 src/vmod*.rst
-src/vmod_html.h
+src/vmod_rtstatus_html.h

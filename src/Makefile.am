@@ -10,8 +10,8 @@ libvmod_rtstatus_la_SOURCES = \
 	vmod_rtstatus.h \
 	vmod_rtstatus.c \
 	vmod_rtstatus_main.c \
-	vmod_html.h \
-	vmod_html.c
+	vmod_rtstatus_html.h \
+	vmod_rtstatus_html.c
 
 nodist_libvmod_rtstatus_la_SOURCES = \
 	vcc_rtstatus_if.c \
@@ -27,8 +27,8 @@ vcc_rtstatus_if.c: vcc_rtstatus_if.h
 vcc_rtstatus_if.h vmod_rtstatus.man.rst: @VMODTOOL@ $(top_srcdir)/src/vmod_rtstatus.vcc
 	@VMODTOOL@ -o vcc_rtstatus_if $(top_srcdir)/src/vmod_rtstatus.vcc
 
-BUILT_SOURCES = vmod_html.h
-vmod_html.h: rtstatus.html cstring.py
+BUILT_SOURCES = vmod_rtstatus_html.h
+vmod_rtstatus_html.h: rtstatus.html cstring.py
 	@PYTHON@ $(abs_top_srcdir)/src/cstring.py $(abs_top_srcdir)/src/rtstatus.html > $@
 
 vmod_rtstatus.3: vmod_rtstatus.man.rst
@@ -61,7 +61,7 @@ EXTRA_DIST = \
 CLEANFILES = \
 	$(builddir)/vcc_rtstatus_if.c \
 	$(builddir)/vcc_rtstatus_if.h \
-	$(builddir)/vmod_html.h \
+	$(builddir)/vmod_rtstatus_html.h \
 	$(builddir)/vmod_rtstatus.rst \
 	$(builddir)/vmod_rtstatus.man.rst \
 	$(dist_man_MANS)
