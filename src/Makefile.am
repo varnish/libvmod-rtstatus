@@ -10,8 +10,7 @@ libvmod_rtstatus_la_SOURCES = \
 	vmod_rtstatus.c \
 	vmod_rtstatus_vsm.h \
 	vmod_rtstatus_vsm.c \
-	vmod_rtstatus_html.h \
-	vmod_rtstatus_html.c
+	vmod_rtstatus_html.h
 
 nodist_libvmod_rtstatus_la_SOURCES = \
 	vcc_rtstatus_if.c \
