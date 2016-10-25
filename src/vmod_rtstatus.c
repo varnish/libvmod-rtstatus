@@ -18,7 +18,7 @@ vmod_rtstatus(VRT_CTX)
 
 	if (ctx->method != VCL_MET_SYNTH) {
 		VSLb(ctx->vsl, SLT_VCL_Error, "rtstatus() can only be used in vcl_synth");
-		return "{ \"error\": \"Check Varnishlog for more details\" }";
+		return "{ \"error\": \"rtstatus.rtstatus() can only be used in vcl_synth\" }";
 	}
 
 	vd = VSM_New();
@@ -39,25 +39,14 @@ vmod_rtstatus(VRT_CTX)
 }
 
 VCL_STRING
-vmod_html(const struct vrt_ctx *ctx)
+vmod_html(VRT_CTX)
 {
-	char *p;
-	unsigned u,v;
-
         if (ctx->method != VCL_MET_SYNTH) {
-                VSLb(ctx->vsl, SLT_VCL_Error, "rtstatus() can only be used in vcl_synth");
-                return "{ \"error\": \"Check Varnishlog for more details\" }";
+                VSLb(ctx->vsl, SLT_VCL_Error, "rtstatus.html() can only be used in vcl_synth");
+                return "{ \"error\": \"rtstatus() can only be used in vcl_synth\" }\n";
         }
 
-	u = WS_Reserve(ctx->ws, 0);
-	p = ctx->ws->f;
-	v = snprintf(p, u, "%s", html);
-	v++;
-	if (v > u) {
-	    WS_Release(ctx->ws, 0);
-	    return "{ \"error\": \"Workspace overflow\" }";
-	}
-	WS_Release(ctx->ws, v);
-	return (p);
+	AN(ctx->specific);
+	VSB_cat(ctx->specific, html);
+	return "";
 }
-
