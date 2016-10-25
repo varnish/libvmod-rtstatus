@@ -2,7 +2,7 @@
 #include "vrt.h"
 #include "vcl.h"
 
-#include "vmod_rtstatus.h"
+#include "vmod_rtstatus_vsm.h"
 #include "vmod_rtstatus_html.h"
 
 #include "vcc_rtstatus_if.h"

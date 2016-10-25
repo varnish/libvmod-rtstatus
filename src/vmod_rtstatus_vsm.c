@@ -1,3 +1,9 @@
+/*
+ *
+ * Extract counters from the Varnish Shared Memory (VSM).
+ *
+ * Original author: Arianna Aondio <aondio@varnish-software.com>
+ */
 
 #include <inttypes.h>
 #include <time.h>
@@ -6,7 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "vmod_rtstatus.h"
+#include "vmod_rtstatus_vsm.h"
 #include "vapi/vsc.h"
 #include "vrt.h"
 #include "vtim.h"
