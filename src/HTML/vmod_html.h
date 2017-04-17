@@ -7,7 +7,6 @@ char *html =
 	"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
 	"    <meta name=\"description\" content=\"Varnish status frontend\">\n"
 	"    <meta name=\"author\" content=\"Varnish software\">\n"
-	"    <link rel=\"icon\" href=\"../../favicon.ico\">\n"
 	"    <title>Varnish Status</title>\n"
 	"    <script type=\"text/javascript\" src=\"https://code.jquery.com/jquery-1.4.2.min.js\"></script>\n"
 	"    <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css\">\n"
