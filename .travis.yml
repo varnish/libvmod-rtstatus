@@ -6,7 +6,7 @@ before_install:
 - curl -L https://packagecloud.io/varnishcache/varnish40/gpgkey | sudo apt-key add -
 - echo "deb https://packagecloud.io/varnishcache/varnish40/ubuntu/ precise main" | sudo tee /etc/apt/sources.list.d/varnish-cache.list
 - sudo apt-get -q update
-- sudo apt-get install varnish libvarnishapi-dev
+- sudo apt-get install varnish varnish-dev
 
 before_script:
 - ./autogen.sh
