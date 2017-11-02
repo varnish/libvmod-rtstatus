@@ -84,9 +84,7 @@ Make targets:
 * make install - installs your vmod in `VMODDIR`
 * make check - runs the unit tests in ``src/tests/*.vtc``
 
-In your VCL you could then use this vmod along the following lines:
-
-```vcl
+In your VCL you could then use this vmod along the following lines::
 
     vcl 4.0;
 	import std;
@@ -113,4 +111,3 @@ In your VCL you could then use this vmod along the following lines:
 			return (deliver);
 			}
 	}
-```
