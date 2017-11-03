@@ -3,6 +3,9 @@
 vmod_rtstatus
 =============
 
+.. image:: https://travis-ci.org/varnish/libvmod-rtstatus.svg?branch=4.0
+    :target: https://travis-ci.org/varnish/libvmod-rtstatus
+    
 -------------------------------
 Varnish Real-Time Status Module
 -------------------------------
