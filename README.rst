@@ -83,8 +83,8 @@ Make targets:
 * make check - runs the unit tests in ``src/tests/*.vtc``
 
 In your VCL you could then use this vmod along the following lines::
-        
-    	vcl 4.0;
+
+    vcl 4.0;
 	import std;
 	import rtstatus;
 
@@ -95,10 +95,10 @@ In your VCL you could then use this vmod along the following lines::
 			return(synth(800, "OK"));
 		}
 	}
-	sub vcl_synth {	
+	sub vcl_synth {
 		if (resp.status == 700){
 			set resp.status = 200;
-			set resp.http.Content-Type = "text/plain; charset=utf-8";
+			set resp.http.Content-Type = "application/json; charset=utf-8";
 			synthetic(rtstatus.rtstatus());
 			return (deliver);
 		}
