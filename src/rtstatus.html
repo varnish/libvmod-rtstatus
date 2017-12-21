@@ -119,7 +119,7 @@ function loadJSON() {
   $.ajax({
     url: "/rtstatus.json",
     success: function(json) {
-      var JsonToStore = JSON.stringify(eval('(' + json + ')'));
+      var JsonToStore = JSON.stringify(json);
       localStorage.setItem('json', JsonToStore);
     }
   });
