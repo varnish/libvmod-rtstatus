@@ -224,9 +224,7 @@ vmod_synthetic_json(VRT_CTX)
 	struct vsm *vd;
 
 	if (ctx->method != VCL_MET_SYNTH) {
-		VSLb(ctx->vsl, SLT_VCL_Error,
-		    "rtstatus: can only be used in vcl_synth");
-		VRT_handling(ctx, VCL_RET_FAIL);
+		VRT_fail(ctx, "rtstatus: can only be used in vcl_synth");
 		return;
 	}
 
@@ -236,10 +234,9 @@ vmod_synthetic_json(VRT_CTX)
 
 	/* XXX: there is currently no n_arg in heritage */
 	if (VSM_Arg(vd, 'n', heritage.identity) < 0 || VSM_Attach(vd, -1)) {
-		VSLb(ctx->vsl, SLT_VCL_Error, "rtstatus: can't open VSM for %s",
-		    heritage.identity);
 		VSM_Destroy(&vd);
-		VRT_handling(ctx, VCL_RET_FAIL);
+		VRT_fail(ctx, "rtstatus: can't open VSM for %s",
+		    heritage.identity);
 		return;
 	}
 
@@ -255,9 +252,7 @@ vmod_synthetic_html(VRT_CTX)
 {
 
 	if (ctx->method != VCL_MET_SYNTH) {
-		VSLb(ctx->vsl, SLT_VCL_Error,
-		    "rtstatus: can only be used in vcl_synth");
-		VRT_handling(ctx, VCL_RET_FAIL);
+		VRT_fail(ctx, "rtstatus: can only be used in vcl_synth");
 		return;
 	}
 
