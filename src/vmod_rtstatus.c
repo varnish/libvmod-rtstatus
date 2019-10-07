@@ -191,7 +191,7 @@ rtstatus_collect(struct rtstatus_priv *rs, struct vsm *vd)
 	(void)VSC_Iter(vsc, vd, rtstatus_rate_cb, rs);
 	rtstatus_print_rate(rs);
 
-	VSB_printf(rs->vsb, "\"varnish_version\": \"%s\",\n", VCS_version);
+	VSB_printf(rs->vsb, "\"varnish_version\": \"%s\",\n", VCS_String("V"));
 
 	gethostname(vrt_hostname, sizeof vrt_hostname);
 	VSB_printf(rs->vsb, "\"server_id\": \"%s\",\n", vrt_hostname);
