@@ -1,41 +1,43 @@
-varnishtest "Test rtstatus servers"
+varnishtest "Primitive sanity check"
 
 server s1 {
-       rxreq
-       txresp
+	rxreq
+	txresp
 } -start
 
-server s2 {
-       rxreq
-       txresp
-} -start
-
-varnish v1 -vcl+backend {
+varnish v1 -arg "-i ${tmpdir}/v1" -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
-	
-	director foo random {
-		{ .backend = s1; .weight = 1; }
-		{ .backend = s2; .weight = 1; }
-	}
 
 	sub vcl_recv {
-		if( req.url ~ "/rtstatus") {
-			set req.backend = foo;
-			error 200 "OK";
+		if (req.url == "/rtstatus.json") {
+			return(synth(200));
 		}
 	}
-	sub vcl_error {
-		if(obj.status == 200) {
-			synthetic rtstatus.rtstatus();
-			return (deliver);
+
+	sub vcl_synth {
+		if (req.url == "/rtstatus.json") {
+			rtstatus.synthetic_json();
+			return(deliver);
 		}
 	}
 } -start
 
 client c1 {
-	txreq -url "/rtstatus"
+	txreq -url "/rtstatus.json"
 	rxresp
-	expect resp.status == 200		
-}
-client c1 -run
+	expect resp.status == 200
+	expect resp.http.content-type ~ "application/json"
+	expect resp.body ~ "MAIN.s_req"
+	expect resp.body ~ {"uptime_sec": 0,}
+} -run
 
+delay 2
+
+client c1 {
+	txreq -url "/rtstatus.json"
+	rxresp
+	expect resp.status == 200
+	expect resp.http.content-type ~ "application/json"
+	expect resp.body ~ "MAIN.s_req"
+	expect resp.body !~ {"uptime_sec": 0,}
+} -run

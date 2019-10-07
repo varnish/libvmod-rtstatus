@@ -1,55 +1,54 @@
-varnishtest "Test rtstatus multiple varnish istances"
+varnishtest "Test rtstatus multiple varnish instances"
 
-server s1 {
-       rxreq
-       txresp
-} -start
-
-varnish v1 -vcl+backend {
+varnish v1 -arg "-i ${tmpdir}/v1" -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
 
+	backend s1 { .host= "127.0.0.1"; }
+
 	sub vcl_recv {
-		if(req.url ~ "/rtstatus") {
-			error 800 "OK";
+		if (req.url == "/rtstatus.json") {
+			return(synth(200));
 		}
 	}
-	sub vcl_error {
-		if( obj.status == 800){
-			synthetic rtstatus.rtstatus();
-			set obj.status = 200;
-		return (deliver);
-		}	
+	sub vcl_synth {
+		if (req.url == "/rtstatus.json") {
+			rtstatus.synthetic_json();
+			return(deliver);
+		}
 	}
 } -start
 
-varnish v2 -vcl+backend {
+varnish v2 -arg "-i ${tmpdir}/v2" -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
 
+	backend s2 { .host= "127.0.0.1"; }
+
 	sub vcl_recv {
-		if(req.url !~ "/rtstatus") {
-			error 503;
+		if (req.url == "/rtstatus.json") {
+			return(synth(200));
 		}
 	}
-	sub vcl_error {
-		if( obj.status == 503){
-			set obj.http.Header = "KO";
-		return (deliver);
-		}	
+	sub vcl_synth {
+		if (req.url == "/rtstatus.json") {
+			rtstatus.synthetic_json();
+			return(deliver);
+		}
 	}
-	
 } -start
 
 client c1 {
-       txreq -url "/rtstatus"
-       rxresp
-       expect resp.status == 200
- 
-}-start
+	txreq -url "/rtstatus.json"
+	rxresp
+	expect resp.status == 200
+	expect resp.http.content-type ~ "application/json"
+	expect resp.body ~ "VBE.vcl1.s1.happy"
+} -start
 
 client c1 -connect ${v2_sock} {
-       txreq -url "/rtstati"
-       rxresp
-       expect resp.status == 503
-       expect resp.http.Header == "KO"
-}-run
+	txreq -url "/rtstatus.json"
+	rxresp
+	expect resp.status == 200
+	expect resp.http.content-type ~ "application/json"
+	expect resp.body ~ "VBE.vcl1.s2.happy"
+} -run
 

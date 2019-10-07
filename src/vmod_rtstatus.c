@@ -1,258 +1,268 @@
-#include "config.h"
+/*
+ * Copyright (c) 2017 Varnish Software AS
+ * All rights reserved.
+ *
+ * Author: Arianna Aondio <aondio@varnish-software.com>
+ * Author: Dridi Boukelmoune <dridi@varnish-software.com>
+ */
+
+#include <sys/time.h>
+
 #include <inttypes.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
-#include <unistd.h>
 #include <math.h>
-#include "vrt.h"
-#include "vrt_obj.h"
-#include "bin/varnishd/cache.h"
-#include "vcc_if.h"
-#include "bin/varnishd/cache_backend.h"
-#include "varnishapi.h"
-#include "vsm.h"
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+
+#include "cache/cache.h"
+
+#include "miniobj.h"
+#include "vas.h"
 #include "vcl.h"
+#include "vcs.h"
+#include "vrt_obj.h"
+#include "vsb.h"
+#include "vtim.h"
 
-#define STRCAT(dst, src, sp)					\
-    do {							\
-	dst = wsstrncat(dst, src, sp);				\
-	if (!dst) {						\
-	    WS_Release(sp->wrk->ws, 0);				\
-	    WSL(sp->wrk, SLT_Error, sp->fd,			\
-		"Running out of workspace in vmod_rtstatus."	\
-		"Increase sess_workspace to fix this.");	\
-	    return 1;						\
-	}							\
-    } while(0)							\
+#include "common/heritage.h"
+#include "vapi/vsc.h"
+#include "vapi/vsm.h"
+#include "vsm_priv.h" /* NB: private is OK for bundled VMODs. */
 
+#include "vcc_if.h"
+#include "vmod_rtstatus_html.h"
 
-struct iter_priv
-{
-  char *p;
-  struct sess *cpy_sp;
-  char *time_stamp;
-  struct vtc_job *jp;
+struct rtstatus_priv {
+	unsigned 	magic;
+#define VMOD_RTSTATUS_MAGIC 0x98b584a
+	struct vsb	*vsb;
+	const char	*name;
+	int		name_len;
+	uint64_t	up;
+	uint64_t	hit;
+	uint64_t	miss;
+	uint64_t	req;
+	uint64_t	beresp_hdr;
+	uint64_t	beresp_body;
+	uint64_t	bereq_hdr;
+	uint64_t	bereq_body;
+	uint64_t	be_happy;
 };
 
-int
-init_function (struct vmod_priv *priv, const struct VCL_conf *conf)
-{
-  return (0);
-}
+static const struct gethdr_s rststatus_content_type =
+    { HDR_RESP, "\015Content-Type:"};
 
-//////////////////////////////////////////////////////////
-static char *
-wsstrncat (char *dest, const char *src, struct sess *sp)
-{
-  if (sp->wrk->ws->r <= sp->wrk->ws->f)
-    {
-      return (NULL);
-    }
-  return strcat (dest, src);
-}
 
-/////////////////////////////////////////////////////////
-int
-general_info (struct iter_priv *iter)
-{
-    char tmp[128];
-    STRCAT (iter->p, "\t\"req_request\": \"", iter->cpy_sp);
-    STRCAT (iter->p, VRT_r_req_request (iter->cpy_sp), iter->cpy_sp);
-    STRCAT (iter->p, "\",\n", iter->cpy_sp);
-    sprintf (tmp, "\t\"obj_status\": %d,\n", VRT_r_obj_status (iter->cpy_sp));
-    STRCAT (iter->p, tmp, iter->cpy_sp);
-    STRCAT (iter->p, "\t\"timestamp\" : \"", iter->cpy_sp);
-    STRCAT (iter->p, iter->time_stamp, iter->cpy_sp);
-    STRCAT (iter->p, "\",\n\t\"varnish_version\" : \"", iter->cpy_sp);
-    STRCAT (iter->p, VCS_version, iter->cpy_sp);
-    STRCAT (iter->p, "\",\n", iter->cpy_sp);
-    sprintf (tmp, "\t\"varnish_port\": %d,\n", VRT_r_server_port (iter->cpy_sp));
-    STRCAT (iter->p, tmp, iter->cpy_sp);
-    STRCAT (iter->p, "\t\"server_id\": \"", iter->cpy_sp);
-    STRCAT (iter->p, VRT_r_server_identity (iter->cpy_sp), iter->cpy_sp);
-    STRCAT (iter->p, "\",\n", iter->cpy_sp);
-    STRCAT (iter->p, "\t\"client_id\": \"", iter->cpy_sp);
-    STRCAT (iter->p, VRT_r_client_identity (iter->cpy_sp), iter->cpy_sp);
-    STRCAT (iter->p, "\",\n", iter->cpy_sp);
- 
-  
-  return (0);
-}
+/*--------------------------------------------------------------------*/
 
-//////////////////////////////////////////////////////////
-int
-backend (struct iter_priv *iter)
+static int
+rtstatus_rate_cb(void *priv, const struct VSC_point * const pt)
 {
-  int i;
-  int cont = 1;
-  STRCAT (iter->p, "\t\"backend\": [", iter->cpy_sp);
-  for (i = 1; i < iter->cpy_sp->vcl->ndirector; ++i)
-    {
-      CHECK_OBJ_NOTNULL (iter->cpy_sp->vcl->director[i], DIRECTOR_MAGIC);
-      if (strcmp ("simple", iter->cpy_sp->vcl->director[i]->name) == 0)
-	{
-	  char buf[1024];
-	  int j, healthy;
+	struct rtstatus_priv *rs;
 
-	  healthy = VDI_Healthy (iter->cpy_sp->vcl->director[i], iter->cpy_sp);
-	  j = snprintf (buf, sizeof buf, "{\"name\":\"%s\", \"value\": \"%s\"}",
-		      iter->cpy_sp->vcl->director[i]->vcl_name,
-		      healthy ? "healthy" : "sick");
-	  assert (j >= 0);
-	  STRCAT (iter->p, buf, iter->cpy_sp);
-	  if (i < (iter->cpy_sp->vcl->ndirector - 2))
-	    {
-	      STRCAT (iter->p, ",", iter->cpy_sp);
-	    }
+	CAST_OBJ_NOTNULL(rs, priv, VMOD_RTSTATUS_MAGIC);
+
+	if (pt == NULL)
+		return (0);
+
+	if (!strcmp(pt->name, "MAIN.uptime")) {
+		rs->up = *(const volatile uint64_t*)pt->ptr;
+		rs->name_len++;
+	} else if (!strcmp(pt->name, "MAIN.cache_hit")) {
+		rs->hit = *(const volatile uint64_t*)pt->ptr;
+		rs->name_len++;
+	} else if (!strcmp(pt->name, "MAIN.cache_miss")) {
+		rs->miss = *(const volatile uint64_t*)pt->ptr;
+		rs->name_len++;
+	} else if (!strcmp(pt->name, "MAIN.client_req")) {
+		rs->req = *(const volatile uint64_t*)pt->ptr;
+		rs->name_len++;
 	}
-    }
-  STRCAT (iter->p, "],\n", iter->cpy_sp);
-  return (0);
+
+	return (rs->name_len == 4);
 }
 
-////////////////////////////////////////////////////////
-int
-director (struct iter_priv *iter)
-{
-  STRCAT (iter->p, "\t\"director\": {\"name\":\"", iter->cpy_sp);
-  STRCAT (iter->p, iter->cpy_sp->director->name, iter->cpy_sp);
-  STRCAT (iter->p, "\", \"vcl_name\":\"", iter->cpy_sp);
-  STRCAT (iter->p, iter->cpy_sp->director->vcl_name, iter->cpy_sp);
-  STRCAT (iter->p, "\"}", iter->cpy_sp);
-  return (0);
-}
-
-////////////////////////////////////////////////////
 static void
-myexp (double *acc, double val, unsigned *n, unsigned nmax)
+rtstatus_print_rate(struct rtstatus_priv *rs)
 {
-  if (*n < nmax)
-    (*n)++;
-  (*acc) += (val - *acc) / (double) *n;
+	double ratio, total;
+	unsigned up;
+
+	total = rs->hit + rs->miss;
+        if (total != 0)
+                ratio = rs->hit / total;
+        else
+                ratio = 0;
+
+	up = rs->up;
+	VSB_printf(rs->vsb, "\"uptime\": \"%u+%02u:%02u:%02u\",\n",
+	    up / 86400, (up % 86400) / 3600, (up % 3600) / 60, up % 60);
+	VSB_printf(rs->vsb, "\"uptime_sec\": %u,\n", up);
+        VSB_printf(rs->vsb, "\"absolute_hitrate\": %.2f,\n", ratio * 100);
+
+	if (up == 0) {
+		VSB_cat(rs->vsb, "\"avg_hitrate\": null,\n");
+		VSB_cat(rs->vsb, "\"avg_load\": null,\n");
+	} else {
+		VSB_printf(rs->vsb, "\"avg_hitrate\": %.2f,\n", (ratio * 100) / up);
+		VSB_printf(rs->vsb, "\"avg_load\": %.2f,\n", (double)rs->req / up);
+	}
 }
 
-///////////////////////////////////////////////////////
-int
-rate (struct iter_priv *iter)
+static int
+rtstatus_stats_cb(void *priv, const struct VSC_point *const pt)
 {
-  struct timeval tv;
-  double tt, lt, lhit, hit, lmiss, miss, hr, mr, ratio, up;
-  char tmp[128];
+	struct rtstatus_priv *rs;
+	const char *type, *ident;
+	uint64_t val;
 
-  AZ (gettimeofday (&tv, NULL));
-  tt = tv.tv_usec * 1e-6 + tv.tv_sec;
-  lt = tt - lt;
+	CAST_OBJ_NOTNULL(rs, priv, VMOD_RTSTATUS_MAGIC);
 
-  hit = VSC_C_main->cache_hit;
-  miss = VSC_C_main->cache_miss;
-  hr = (hit - lhit) / lt;
-  mr = (miss - lmiss) / lt;
-  lhit = hit;
-  lmiss = miss;
-  if (hr + mr != 0)
-    {
-      ratio = (hr / (hr + mr)) * 100;
-    }
-  up = VSC_C_main->uptime;
-  sprintf (tmp, "\t\"hitrate\": %.2f,\n", ratio);
-  STRCAT (iter->p, tmp, iter->cpy_sp);
-  sprintf (tmp, "\t\"load\": %.0f,\n", (VSC_C_main->client_req / up));
-  STRCAT (iter->p, tmp, iter->cpy_sp);
-  return (0);
+	if (pt == NULL)
+		return (0);
+
+	type = pt->name;
+	ident = strchr(pt->name, '.');
+	XXXAN(ident);
+	val = *(const volatile uint64_t *)pt->ptr;
+
+	if (rs->name_len > 0)
+		VSB_cat(rs->vsb, ",\n");
+	rs->name_len = 1; /* NB: no need to compute an actual strlen. */
+
+	VSB_printf(rs->vsb,
+	    "\"%s\": {\"type\": \"%.*s\", \"ident\": \"%s\", "
+	    "\"descr\": \"%s\", \"value\": %" PRIu64 "}",
+	    pt->name, (int)(ident - type), type, ident + 1, pt->sdesc, val);
+
+	return (0);
 }
 
-/////////////////////////////////////////////////////////
-int
-json_status (void *priv, const struct VSC_point *const pt)
+static int
+rtstatus_backend_cb(void *priv, const struct VSC_point *const pt)
 {
-  char tmp[128];
-  struct iter_priv *iter = priv;
-  uint64_t val;
-  val = *(const volatile uint64_t *) pt->ptr;
+	struct rtstatus_priv *rs;
+	const char *be, *cnt;
+	uint64_t val;
+	int len;
 
-  if (iter->jp)
-    iter->jp = 0;
-  else
-    STRCAT (iter->p, ",\n", iter->cpy_sp);
-  STRCAT (iter->p, "\t\"", iter->cpy_sp);
-  if (strcmp (pt->class, ""))
-    {
-      STRCAT (iter->p, pt->class, iter->cpy_sp);
-      STRCAT (iter->p, ".", iter->cpy_sp);
-    }
-  if (strcmp (pt->ident, ""))
-    {
-      STRCAT (iter->p, pt->ident, iter->cpy_sp);
-      STRCAT (iter->p, ".", iter->cpy_sp);
-    }
-  STRCAT (iter->p, pt->name, iter->cpy_sp);
-  STRCAT (iter->p, "\": {", iter->cpy_sp);
-  if (strcmp (pt->class, ""))
-    {
-      STRCAT (iter->p, "\"type\": \"", iter->cpy_sp);
-      STRCAT (iter->p, pt->class, iter->cpy_sp);
-      STRCAT (iter->p, "\", ", iter->cpy_sp);
-    }
-  if (strcmp (pt->ident, ""))
-    {
-      STRCAT (iter->p, "\"ident\": \"", iter->cpy_sp);
-      STRCAT (iter->p, pt->ident, iter->cpy_sp);
-      STRCAT (iter->p, "\", ", iter->cpy_sp);
-    }
-  STRCAT (iter->p, "\"descr\": \"", iter->cpy_sp);
-  STRCAT (iter->p, pt->desc, iter->cpy_sp);
-  STRCAT (iter->p, "\", ", iter->cpy_sp);
-  sprintf (tmp, "\"value\": %" PRIu64 "}", val);
-  STRCAT (iter->p, tmp, iter->cpy_sp);
-  if (iter->jp)
-    STRCAT (iter->p, "\n", iter->cpy_sp);
-  return (0);
+	CAST_OBJ(rs, priv, VMOD_RTSTATUS_MAGIC);
+
+	if (pt == NULL || strncmp(pt->name, "VBE.", 4))
+		return (0);
+
+	val = *(const volatile uint64_t *)pt->ptr;
+	be = pt->name + 4;
+	cnt = strrchr(be, '.');
+	XXXAN(cnt);
+	cnt++;
+	len = cnt - be;
+
+	if (len != rs->name_len || strncmp(be, rs->name, len)) {
+		if (rs->name_len > 0)
+			VSB_cat(rs->vsb, "},\n");
+		rs->name = be;
+		rs->name_len = cnt - be;
+		VSB_printf(rs->vsb, "{\"server_name\": \"%.*s\"",
+		    len - 1, be);
+	}
+
+	VSB_printf(rs->vsb, ", \"%s\": %" PRIu64, cnt, val);
+	return (0);
 }
 
-///////////////////////////////////////////////////////
-int
-run_subroutine (struct iter_priv *iter, struct VSM_data *vd)
+static int
+rtstatus_collect(struct rtstatus_priv *rs, struct vsm *vd)
 {
+	char vrt_hostname[255];
+	struct vsc *vsc;
 
-  STRCAT (iter->p, "{\n", iter->cpy_sp);
-  rate (iter);
-  general_info (iter);
-  backend (iter);
-  director (iter);
-  (void) VSC_Iter (vd, json_status, iter);
-  STRCAT (iter->p, "\n}\n", iter->cpy_sp);
-  return (0);
+	CHECK_OBJ_NOTNULL(rs, VMOD_RTSTATUS_MAGIC);
+	AN(rs->vsb);
+	AN(vd);
+
+	vsc = VSC_New();
+	AN(vsc);
+
+	VSB_cat(rs->vsb, "{\n");
+	VSB_indent(rs->vsb, 4);
+
+	rs->name_len = 0;
+	(void)VSC_Iter(vsc, vd, rtstatus_rate_cb, rs);
+	rtstatus_print_rate(rs);
+
+	VSB_printf(rs->vsb, "\"varnish_version\": \"%s\",\n", VCS_version);
+
+	gethostname(vrt_hostname, sizeof vrt_hostname);
+	VSB_printf(rs->vsb, "\"server_id\": \"%s\",\n", vrt_hostname);
+
+	VSB_cat(rs->vsb, "\"be_info\": [\n");
+	VSB_indent(rs->vsb, 4);
+	rs->name_len = 0;
+	(void)VSC_Iter(vsc, vd, rtstatus_backend_cb, rs);
+	VSB_cat(rs->vsb, "}\n");
+	VSB_indent(rs->vsb, -4);
+	VSB_cat(rs->vsb, "],\n");
+
+	rs->name_len = 0;
+	(void)VSC_Iter(vsc, vd, rtstatus_stats_cb, rs);
+
+	VSB_indent(rs->vsb, -4);
+	VSB_cat(rs->vsb, "\n}\n");
+
+	VSC_Destroy(&vsc, vd);
+
+	return (0);
 }
 
-///////////////////////////////////////////////////////
-const char *
-vmod_rtstatus (struct sess *sp)
+/*--------------------------------------------------------------------*/
+
+VCL_VOID
+vmod_synthetic_json(VRT_CTX)
 {
-  struct iter_priv iter = { 0 };
-  struct tm t_time;
-  struct VSM_data *vd;
-  const struct VSC_C_main *VSC_C_main;
+	struct rtstatus_priv rs;
+	struct vsm *vd;
 
-  vd = VSM_New ();
-  VSC_Setup (vd);
+	if (ctx->method != VCL_MET_SYNTH) {
+		VSLb(ctx->vsl, SLT_VCL_Error,
+		    "rtstatus: can only be used in vcl_synth");
+		VRT_handling(ctx, VCL_RET_FAIL);
+		return;
+	}
 
-  if (VSC_Open (vd, 1))
-    {
-      WSL (sp->wrk, SLT_Error, sp->fd, "VSC can't be opened.");
-      VSM_Delete (vd);
-      return "";
-    }
-  iter.time_stamp = VRT_time_string (sp, sp->t_req);
-  WS_Reserve (sp->wrk->ws, 0);
-  iter.p = sp->wrk->ws->f;
-  *(iter.p) = 0;
-  iter.cpy_sp = sp;
-  VSC_C_main = VSC_Main (vd);
-  run_subroutine (&iter, vd);
-  VSM_Delete (vd);
-  WS_Release (sp->wrk->ws, strlen (iter.p) + 1);
+	INIT_OBJ(&rs, VMOD_RTSTATUS_MAGIC);
+	vd = VSM_New();
+	AN(vd);
 
-  return (iter.p);
+	/* XXX: there is currently no n_arg in heritage */
+	if (VSM_Arg(vd, 'n', heritage.identity) < 0 || VSM_Attach(vd, -1)) {
+		VSLb(ctx->vsl, SLT_VCL_Error, "rtstatus: can't open VSM for %s",
+		    heritage.identity);
+		VSM_Destroy(&vd);
+		VRT_handling(ctx, VCL_RET_FAIL);
+		return;
+	}
+
+	rs.vsb = ctx->specific;
+	rtstatus_collect(&rs, vd);
+	VSM_Destroy(&vd);
+	VRT_SetHdr(ctx, &rststatus_content_type,
+	    "application/json; charset=utf-8", vrt_magic_string_end);
+}
+
+VCL_VOID
+vmod_synthetic_html(VRT_CTX)
+{
+
+	if (ctx->method != VCL_MET_SYNTH) {
+		VSLb(ctx->vsl, SLT_VCL_Error,
+		    "rtstatus: can only be used in vcl_synth");
+		VRT_handling(ctx, VCL_RET_FAIL);
+		return;
+	}
+
+	AN(ctx->specific);
+	VSB_cat(ctx->specific, html);
+	VRT_SetHdr(ctx, &rststatus_content_type, "text/html; charset=utf-8",
+	    vrt_magic_string_end);
 }

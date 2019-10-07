@@ -1,32 +1,25 @@
-varnishtest "Test rtstatus vmod"
+varnishtest "Test rtstatus() can be just used in vcl_synth"
 
 server s1 {
-       rxreq
-       txresp
+        rxreq
+        txresp
 } -start
 
-varnish v1 -vcl+backend {
+varnish v1 -arg "-i ${tmpdir}/v1" -vcl+backend {
 	import rtstatus from "${vmod_topbuild}/src/.libs/libvmod_rtstatus.so";
 
-	sub vcl_recv {
-		if(req.url ~ "/rtstatus") {
-			error 800 "OK";
-		}
-	}
-	sub vcl_error {
-		if( obj.status == 800){
-			synthetic rtstatus.rtstatus();
-			set obj.status = 200;
+	sub vcl_deliver {
+		rtstatus.synthetic_json();
 		return (deliver);
-		}	
 	}
 } -start
 
-client c1 {
-       txreq -url "/rtstatus"
-       rxresp
-       expect resp.status == 200
+logexpect l1 -v v1 -g raw {
+	expect * = Error "rtstatus: can only be used in vcl_synth"
 }
-client c1 -run
 
-
+client c1 {
+        txreq -url "/rtstatus.json"
+        rxresp
+        expect resp.status == 503
+} -run

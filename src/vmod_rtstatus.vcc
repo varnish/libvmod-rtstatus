@@ -1,4 +1,88 @@
-Module rtstatus
-Init init_function
-Function STRING rtstatus()
+$Module rtstatus 3 "Real-time Varnish Status"
 
+DESCRIPTION
+===========
+
+A vmod that lets you query your Varnish server for a JSON object containing
+counters.
+
+Visiting the URL ``/rtstatus.json`` on the Varnish server will produce an
+``application/json`` response of the following format::
+
+    {
+        "uptime" : "0+16:12:58",
+        "uptime_sec": 58378.00,
+        "hitrate": 30.93,
+        "load": 2.73,
+        "varnish_version" : "[...]",
+        "server_id": "[...]",
+        "be_info":
+        [
+            { "server_name": "[...]", "happy": [...], "bereq_tot": [...], [...] },
+            [...]
+        ]
+        "[counter]": {"type": "[...]", "ident": "[...]", "descr": "[...]", "value": [...] },
+        [...]
+    }
+
+$Function VOID synthetic_json()
+
+Description
+	Returns a JSON object with relevant Varnish counters. Takes care
+	of setting the content type.
+
+$Function VOID synthetic_html()
+
+Description
+	Renders in a UI the JSON file obtained from the synthetic_json
+	function. Takes care of setting the content type.
+
+USAGE
+=====
+
+In your VCL you could then use this vmod along the following lines::
+
+    vcl 4.0;
+
+    import rtstatus;
+
+    sub vcl_recv {
+        if (req.url == "/rtstatus.json" || req.url == "/rtstatus.html") {
+            return (synth(200));
+        }
+    }
+
+    sub vcl_synth {
+            if (req.url == "/rtstatus.json") {
+                    rtstatus.synthetic_json();
+                    return (deliver);
+            }
+            if (req.url == "/rtstatus.html") {
+                    rtstatus.synthetic_html();
+                    return (deliver);
+            }
+    }
+
+
+NUMBERS
+=======
+
+Varnish version
+	Varnish version installed on your server.
+
+Varnish uptime
+	Child uptime.
+
+Hit ratio
+	Absolute hitrate ratio. It is evaluated as: (n_hit) / (n_hit + n_miss).
+	Note that uptime is not taken into consideration for this counter.
+
+Avg hitrate
+	Average hitrate since uptime. It is evaluated as: ((n_hit) / (n_hit + n_miss)) / uptime.
+
+Avg load
+	Average load since uptime. It is evaluated as: n_requests / uptime.
+
+The list of counters is described in the ``varnish-counters(7)`` manual, and
+for convenience backend counters are grouped by backend in the ``be_info``
+field.
